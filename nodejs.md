@@ -2017,7 +2017,7 @@ C:\Users\admit\Desktop\JavaScript\node\node模块\00-http.js
   });
   ```
 
-### 2. 跨域设计
+### 2. 跨域
 
 ```js
 app.all('*', function(req, res, next) {
@@ -2218,7 +2218,7 @@ p1
 
 
 
-伪数组转化为数组的方法`[].split.call(伪数组)`     41节，以后看
+伪数组转化为数组的方法`[].slice.call(伪数组)`     41节，以后看
 
 
 
@@ -2619,4 +2619,534 @@ export default {
   }
 </style>
 ```
+
+
+
+
+
+## 十七、其他模块
+
+### 1. readline
+
+用途：类似初始化package.json文件的效果
+
+```js
+const readline = require('readline')
+const fs = require('fs')
+
+// 固定写法
+const r1 = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+})
+
+// 封装一个写入输出的函数
+function promiseReadline(question) {
+    return new Promise((res) => {
+        r1.question(question, answer => {
+            res(answer)
+        })
+    })
+}
+
+// 封装一个写入文件以及问题的函数
+async function set() {
+    const q1 = await promiseReadline('您的项目名称？')
+    const q2 = await promiseReadline('您的入口文件？')
+    const q3 = await promiseReadline('您的名字？')
+    const q4 = await promiseReadline('您的项目描述？')
+    const ret = `
+    {
+        "name": "${q1}",
+        "version": "1.0.0",
+        "description": "${q4}",
+        "main": "${q2}",
+        "scripts": {
+          "dev": "nodemon app.js",
+          "readline": "node readline.js"
+        },
+        "author": "${q3}",
+        "license": "ISC",
+        "dependencies": {
+          
+        }
+      }      
+    `
+    fs.writeFile('./package1.json', ret, (err) => {
+        console.log(err)
+        r1.close()
+    })
+}
+
+// 调用函数
+set()
+```
+
+### 2. cheerio（第三方，爬虫）
+
+说明：类似于jquery，和jquery用法一模一样
+
+```js
+const cheerio = require('cheerio');
+const axios = require('axios')
+const fs = require('fs')
+const path = require('path')
+
+const urlDetail = 'https://www.doutula.com/photo/list/?page=1'
+
+// 封装一个请求方法
+function getData(url) {
+    return new Promise((resolve, reject) => {
+        axios({url}).then(res => {
+            resolve(res.data)
+        })
+    })
+}
+
+async function getImg() {
+    // 获取到网页的全部信息
+    const res = await getData(url)
+    // 创建$对象
+    const $ = cheerio.load(res)
+    // 获取到需要的DOM结构并遍历（此时返回的也是一个伪数组，需要用jquery的each方法遍历）
+    $('.image_dta').each(async (i, item) => {
+        // 获取需要存放图片的路径
+        const imgPath = './image/' + item.attribs['alt'] + path.extname(item.attribs['data-backup'])
+        // 创建写入流
+        const ws = fs.createWriteStream(imgPath)
+        // 发请求并获取到图片资源
+        const result = await axios({url: item.attribs['data-backup'], responseType: 'stream'})
+        // 将资源写入文档流
+        result.data.pipe(ws)
+        console.log('写入成功')
+        // 关闭流
+        result.data.on('close', () => {
+            ws.close()
+        })
+    })
+}
+// 调用
+getImg(url)
+```
+
+### 3. puppeteer
+
+<a href="http://www.puppeteerjs.com/">puppeteer</a>
+
+
+
+## 十八、 express路由原理（封装）
+
+### 1. 封装一个静态服务器
+
+LcApp.js
+
+```js
+const http = require('http')
+const fs = require('fs')
+const path = require('path')
+
+class LcApp {
+    constructor() {
+        this.server = http.createServer()
+        this.reqEven = {}
+        this.server.on('request', (req, res) => {
+            if(this.reqEven[req.url]) {
+                this.reqEven[req.url](req, res)
+                return
+            } else {
+                fs.readFile('./public' + req.url, (err, data) => {
+                    if(err) {
+                        res.setHeader('Content-Type', 'text/html; charset=utf-8')
+                        res.end('404页面找不到')
+                        return
+                    }
+                    res.setHeader('Content-Type', setHeaderHeader(path.parse(req.url).ext))
+                    res.end(data)
+                })
+            }
+        })
+    }
+    on(url, fn) {
+        this.reqEven[url] = fn
+    }
+    run(port, callback) {
+        this.server.listen(port, callback)
+    }
+    // use(url) {
+
+    // }
+}
+
+
+function setHeaderHeader(ext) {
+    switch (ext) {
+        case '.jpg':
+            return 'image/jpeg'
+        break;
+        case '.html':
+            return 'text/html; charset=utf-8'
+        break;
+        case '.js':
+            return 'text/javascript; charset=utf-8'
+        break;
+        case '.json':
+            return 'text/json; charset=utf-8'
+        break;
+        case '.gif':
+            return 'image/gif'
+        break;
+        case '.css':
+            return 'text/css'
+        break;
+    }
+}
+
+module.exports = LcApp
+```
+
+app.js
+
+```js
+const App = require('./LcApp')
+const app = new App()
+
+app.on('/', (req, res) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    console.log('这是首页')
+    res.end('这是首页')
+})
+app.on('/login', (req, res) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    console.log('这是登录页面')
+    res.end('这是登录页面')
+})
+
+app.run(8000, () => {
+    console.log('服务启动在：' + 'http://127.0.0.1:8000')
+})
+```
+
+### 2. 模板引擎的封装（动态渲染）
+
+#### 2.1 渲染基本数据
+
+- 根据规则去解析链接，获取到对应的索引值或id
+
+  ```js
+  // 将render函数挂载到res对象上
+  res.render = render
+  // 解析url，如果有对应的路由，那个就渲染页面
+  if(this.reqEven[req.url]) {
+      this.reqEven[req.url](req, res)
+      return
+  }
+  // 如果有没有对应的路由，但是有对应的路径，那么判断这个url是一个动态路由，去除id，挂载到res上
+  if(this.reqEven[path.parse(req.url).dir]) {
+      if(path.parse(req.url).dir == '/') {
+          return
+      }
+      req.name = path.parse(req.url).name
+      this.reqEven[path.parse(req.url).dir](req, res)
+      return
+  }
+  ```
+
+- 封装render函数
+
+  ```js
+  function render(path, options) {
+      fs.readFile(path, (err, data) => {
+          if(err) return console.log(err)
+          // 设置匹配规则
+          let reg = /\{\{(.*?)\}\}/igs;
+          let result = data.toString();
+          // 获取到所有的匹配
+          let res = result.match(reg);
+          // 依次遍历并将其替换成需要的变量
+          res.forEach((item) => {
+              let targetValue = options[item.substring(2, item.length-2).trim()]
+              if(targetValue) {
+                  result = result.replace(item, targetValue)
+              }
+          })
+          // 这里的this指的是resolve
+          this.end(result)
+      })
+  }
+  ```
+
+- 调用render方法
+
+  ```js
+  app.on('/movie', (req, res) => {
+      const movieObj = [
+          {
+              name: '同桌的你',
+              author: '刘能',
+              price: '￥10',
+              url:''
+          },
+          {
+              name: '杀破狼',
+              author: '甑子丹',
+              price: '￥20',
+              url: ''
+          }
+      ]
+      res.render(__dirname + '/public/index.html', movieObj[req.name])
+  })
+  ```
+
+- 渲染页面
+
+  ```html
+  <body>
+      <h1>电影名：{{ name }}</h1>
+      <img src="{{ url }}" alt="">
+      <h2>电影简介：{{ author }}</h2>
+      <p>演员列表：{{ price }}</p>
+  </body>
+  ```
+
+#### 2.2 模板引擎遍历
+
+
+
+
+
+
+
+
+
+## 十九、 mysql
+
+https://www.npmjs.com/package/mysql
+
+### 1. 安装
+
+```shell
+npm i mysql
+```
+
+### 2. 配置连接数据库
+
+```js
+// 引入数据库包
+const mysql = require('mysql')
+// 配置参数
+const options = {
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: 'root',
+    database: 'test'
+}
+// 创建一个连接对象
+const connection = mysql.createConnection(options)
+// 建立连接
+connection.connect(err => {
+    if(err) {
+        console.log('链接失败')
+        return
+    }
+    console.log('数据库连接成功')
+})
+```
+
+### 3. sql语句
+
+#### 3.1 增
+
+##### 3.1.1 创建数据库
+
+```js
+const strSql = 'create database sell';
+connection.query(strSql, (err, result) => {
+    if(err) return console.log(err)
+    console.log(result)
+})
+```
+
+##### 3.1.2 创建数据表
+
+```js
+const strSql = `
+    CREATE TABLE sell.testSell  (
+    id int(11) NOT NULL AUTO_INCREMENT,
+    name varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+    age int(11) NOT NULL,
+    gender int(1) NOT NULL,
+    PRIMARY KEY (id) USING BTREE
+  ) ENGINE = MyISAM AUTO_INCREMENT = 3 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Dynamic;
+`
+connection.query(strSql, (err, result) => {
+    if(err) {
+        return console.log(err)
+    }
+    console.log(result)
+})
+```
+
+##### 3.1.3 插入数据
+
+###### 3.1.3.1 写死
+
+```js
+const strSql = 'insert into testsell (name, age, gender) values ("沈腾", 35, 0)'
+connection.query(strSql, (err, result) => {
+    if(err) return console.log(err)
+    console.log(result)
+})
+```
+
+###### 3.1.3.2 动态
+
+```js
+// 用?作为占位符
+const strSql = 'insert into testsell (name, age, gender) values (?, ?, ?)'
+connection.query(strSql, ['马丽', 34, 1], (err, result) => {
+    if(err) return console.log(err)
+    console.log(result)
+})
+```
+
+
+
+#### 3.2 删
+
+##### 3.2.1 删除数据库
+
+```javascript
+const strSql = 'drop database deletes';
+connection.query(strSql, (err, result) => {
+    if(err){
+        console.log('删除失败')
+        return
+    }
+    console.log(result)
+})
+```
+
+##### 3.2.2 删除数据表
+
+```js
+const strSql = 'drop table text';
+connection.query(strSql, (err, result) => {
+    if(err) {
+        return console.log(err)
+    }
+    console.log(result)
+})
+```
+
+
+
+##### 3.2.3 删除数据
+
+
+
+#### 3.3 改
+
+
+
+#### 3.4 查
+
+##### 3.4.1 查询数据表所有内容
+
+```js
+const strSql = 'select * from 表名';
+// 参数有三个：1、错误对象；2、查询的数据；3、字段的信息
+connection.query(strSql, (err, data, fields) => {
+    if(err) {
+        return console.log('查询失败')
+    }
+    data.forEach(item => {
+        console.log(item)
+    })
+    console.log(fields)
+})
+```
+
+##### 3.4.2 条件查询
+
+```js
+// 多字段多条件查询
+const strSql = 'select * from books where score = 0 and publish_time = "2021-09-10"'
+// 单字段多条件查询
+const strSql = 'select * from books where score between 7 and 9'
+// 或语句
+const strSql = 'select * from books where author = "李煜" or author = "饭太稀"'
+// 数组形式
+const strSql = 'select * from books where author in ("李煜", "饭太稀")'
+// 查找字段是null的数据
+const strSql = 'select * from books where author_info is null'
+// 查找字段不是null的数据
+const strSql = 'select * from books where author_info is not null'
+connection.query(strSql, (err, data) => {
+    if(err) return console.log(err)
+    console.log(data)
+})
+```
+
+##### 3.4.3 模糊查询
+
+```js
+const strSql = 'select * from books where tag like "%文学%"'
+connection.query(strSql, (err, data) => {
+    if(err) return console.log(err)
+    console.log(data.length)
+})
+```
+
+##### 3.4.4 分页查询
+
+```js
+(async function(pageNum, pageSize = 5) {
+    const strSql = `select * from books limit ${(pageNum - 1) * pageSize}, ${pageSize}`
+    const ret = await getData(strSql)
+    console.log(ret)
+})(2)
+// 数组写法
+(async function(pageNum, pageSize = 5) {
+    const strSql = `select * from books limit ?,?`
+    const ret = await getData(strSql, [(pageNum - 1) * pageSize, pageSize])
+    console.log(ret)
+})(3)
+function getData(sql, arr) {
+    return new Promise((resolve, reject) => {
+        connection.query(sql, arr, (err, data) => {
+            if(err) {
+                reject(err)
+                return
+            }
+            resolve(data)
+        })
+    })
+}
+```
+
+
+
+### 4. 范式与关系
+
+#### 4.1 范式：
+
+
+
+#### 4.2 关系：
+
+
+
+#### 4.3 连表查询
+
+```sql
+select * from teacher inner join student (on teacher.name = "老王")
+-- 以左边为准
+select * from teacher right join student on teacher.name = "老王"
+-- 以右边为准
+select * from teacher right join student on teacher.name = "老王"
+```
+
+
 

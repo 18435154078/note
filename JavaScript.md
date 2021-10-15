@@ -511,3 +511,60 @@ console.log(obj);//{name: "xjaioo", age: "18"}
 
 
 
+## 事件队列
+
+
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事件队列</title>
+</head>
+<body>
+    <div class="box3"></div>
+</body>
+<script>
+    let eventAll = {
+        event: {},
+        on: function(event, dataFn) {
+            if(this.event[event]) {
+                this.event[event].push(dataFn)
+            } else {
+                this.event[event] = []
+                this.event[event].push(dataFn)
+            }
+        },
+        emit: function(event, msg) {
+            if(this.event[event]) {
+                this.event[event].forEach(item => {
+                    item(msg)
+                })
+            }
+        }
+    }
+    eventAll.on('click', function(msg) {
+        console.log(msg)
+        console.log('触发1')
+    })
+    eventAll.on('click', function(msg) {
+        console.log(msg)
+        console.log('触发2')
+    })
+    // eventAll.emit('click', 'hello')
+    
+    eventAll.on('event', data => {
+        console.log(data)
+    })
+
+    document.querySelector('.box3').onclick = function() {
+        eventAll.emit('event', 'world')
+    }
+    
+</script>
+</html>
+```
+
