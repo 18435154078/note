@@ -406,17 +406,298 @@ handleSubmit () {
 
 ### 2. 细写render函数
 
+Vue 推荐在绝大多数情况下使用模板来创建你的 HTML。然而在一些场景中，你真的需要 JavaScript 的完全编程的能力。这时你可以用**渲染函数**，它比模板更接近编译器。
 
+render函数接收三个参数：
 
+- 标签名
+- 属性
+- 子元素
 
+h函数每次执行只返回一个dom节点，如果有多层需要逐层嵌套
+
+举个栗子
+
+```js
+// <div class="div1" id="box"><span>aaa</span></div>
+Vue.component('comp', {
+  render: h => {
+    // return h('div', {attrs: {id: 'box'}, class: ['div', 'box2']}, [h('span', 'aaa')])
+    return h('div', {attrs: {id: 'box'}, class: {div: true, box34: true}}, [h('span', 'aaa')])
+  }
+})
+```
 
 
 
 ## 四、tree类组件（递归组件）
 
+### 1. 递归组件的条件
 
+- 组件必须有name属性
+- 必须有结束条件
+
+`tree.vue`
+
+```vue
+<template>
+  <ul>
+    <li v-for="item in treeList" :key="item.id">
+      <div @click="isShow = !isShow">
+        <span>{{ item.title }}</span>
+        <span v-if="item.children">{{ isShow ? '+' : '-' }}</span>
+      </div>
+      <div v-show="isShow" v-if="item.children">
+        <tree :treeList="item.children" />
+      </div>
+    </li>
+  </ul>
+</template>
+
+<script>
+export default {
+  // 递归组件需要name属性
+  name: 'tree',
+  props: {
+    treeList: Array
+  },
+  data() {
+    return {
+      isTree: true,
+      isShow: false
+    }
+  }
+}
+</script>
+```
+
+调用
+
+```vue
+<template>
+  <div>
+    <Tree :treeList="treeList" />
+  </div>
+</template>
+
+<script>
+import Tree from '@/components/tree/Tree'
+export default {
+  name: 'about',
+  data() {
+    return {
+      treeList: [
+        {
+          title: 'hello',
+          id: 1,
+          children: [
+            {
+              title: 'hello1',
+              id: 2,
+              children: [
+                {
+                  title: 'hello',
+                  id: 6,
+                }
+              ]
+            },
+            {
+              title: 'chiildren',
+              id: 3,
+            }
+          ]
+        },
+        {
+          title: 'world',
+          id: 4,
+          children: [
+            {
+              title: '弄号',
+              id: 10,
+              children: [
+                {
+                  title: '你好',
+                  id: 5,
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  components: {
+    Tree
+  }
+}
+</script>
+```
 
 ## 五、vue-router组件及原理
+
+```js
+import Vue from 'vue'
+
+class VueRouter {
+  constructor(options) {
+    this.$options = options
+
+    // 创建一个路由path和route的映射
+    this.routeMap = {}
+
+    // 路径current需要响应式，此时需要创建一个vue，通过vue去实现响应式
+    this.app = new Vue({
+      data() {
+        return {
+          current: '/'
+        }
+      }
+    })
+  }
+
+  init() {
+    // 绑定浏览器的事件
+    this.bindEvent()
+
+    // 解析路由配置
+    this.createRouteMap(this.$options)
+
+    // 创建router-link和router-view全局组件
+    this.initComponent()
+
+  }
+
+  bindEvent() {
+    // 这里需要用bind修正this指向bind(this)
+    window.addEventListener('hashchange', this.onHashChange.bind(this))
+    window.addEventListener('load', this.onHashChange.bind(this))
+  }
+
+  onHashChange() {
+    // localhost:8000/#/home
+    this.app.current = window.location.pathname || '/'
+  }
+
+  createRouteMap(options) {
+    options.routes.forEach(item => {
+      this.routeMap[item.path] = item
+    })
+  }
+
+  initComponent() {
+    // 申明两个全局组件
+    Vue.component('router-link', {
+      props: {
+        to: {
+          type: String,
+          required: true
+        }
+      },
+      render(h) {
+        // 目标是<a href="this.to"></a>
+        // this.$slots.default可以访问匿名插槽
+        return h('a', { attrs:{ href: '#' + this.to } }, this.$slots.default)
+        // return <a href="{this.to}">{this.$slots.defalut}</a>
+      }
+    })
+
+    Vue.component('router-view', {
+      render: (h) => {
+        const comp = this.routeMap[this.app.current].component
+        return h(comp)
+      }
+    })
+  }
+}
+
+// v把ue-router变成插件使用 VueRouter.install
+VueRouter.install = function(_Vue) {
+  const Vue = _Vue // 将vue实例保存
+
+  // 混入任务
+  Vue.mixin({
+    created() {
+      // 将来在初始化的时候回调用，这样就实现了vue的扩展
+      if(this.$options.router) {
+        Vue.prototype.$router = this.$options.router
+        this.$options.router.init()
+      }
+    }
+  })
+}
+
+export default VueRouter
+```
+
+## 六、 vuex源码及实现原理
+
+```js
+let Vue
+
+class Store {
+  constructor(options = {}) {
+    
+// 1. 维护状态state
+// 5. 实现state响应式
+    this.state = new Vue({
+      data() {
+        return options.state
+      }
+    })
+
+    // 初始化mutations
+    this.mutations = options.mutations || {}
+    this.actions = options.actions || {}
+
+    options.getters && this.handleGetters(options.getters)
+  }
+
+// 2. 修改状态commit
+
+  commit = (type, arg) => {
+    const fn = this.mutations[type]
+    fn(this.state, arg)
+  }
+
+// 3. 业务逻辑的状态dispatch
+
+  dispatch(type, arg) {
+    const fn = this.actions[type]
+    return fn({commit: this.commit, state: this.state}, arg)
+  }
+
+// 4. 状态派发
+  handleGetters(getters) {
+    this.getters = {}
+    Object.keys(getters).forEach(item => {
+      Object.defineProperty(this.getters, item, {
+        get: () => {
+          return getters[item](this.state)
+        }
+      })
+    })
+  }
+}
+
+// 6. 插件
+function install(_Vue) {
+  Vue = _Vue
+  
+  // 7. 混入
+  Vue.mixin({
+    beforeCreate() {
+      if(this.$options.store) {
+        // 把store混入到vue原型上
+        Vue.prototype.$store = this.$options.store
+      }
+    }
+  })
+}
+
+export default {Store, install}
+```
+
+## 七、 vue源码及实现原理
 
 
 
