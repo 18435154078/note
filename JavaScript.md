@@ -568,3 +568,70 @@ console.log(obj);//{name: "xjaioo", age: "18"}
 </html>
 ```
 
+
+
+
+
+## 修改this指正：call，apply，bind
+
+```js
+var a = {
+    user:"追梦子",
+    fn:function(a, b){
+        console.log(this, a, b);
+    }
+}
+a.fn() // {user: '追梦子', fn: ƒ}   1   2
+
+// 给把fn赋值给b，此时就this指向就会改变
+var b = a.fn
+b() // Window   1   2
+
+```
+
+### 1. bind修正（赋值时修正）
+
+```js
+var b = a.fn.bind(a)
+a.fn() // {user: '追梦子', fn: ƒ}   1   2
+```
+
+### 2. call修正（调用时修正）
+
+```js
+var b = a.fn
+b.call(a, 1, 2) // {user: '追梦子', fn: ƒ}   1   2
+```
+
+### 3. apply修正（调用时修正）
+
+```js
+var b = a.fn
+b.apply(a, [1, 2]) // {user: '追梦子', fn: ƒ}   1   2
+```
+
+
+
+## 埋点
+
+### 1. 定义
+
+js埋点指的是在应用服务器中的每一个页面中都嵌入一段js脚本，使用户在访问页面时 自动触发js，收集用户访问行为日志，并提交到日志服务器。
+
+### 2. 统计指标
+
+ 进行js埋点的目的是为了获取并统计网站时刻的访问信息，主要的需要的指标如下（当然不限于下面的指标）：
+
+（1）pv（点击量）
+
+（2）uv（独立访客数）
+
+js经典埋点：
+
+```html
+<script>
+    const img = new Image()
+    img.src = '/api/hello?world=123'
+</script>
+```
+

@@ -805,6 +805,8 @@ const request = axios.create({
   transformResponse: [function (data) {
     // Do whatever you want to transform the data
     try {
+        // 作用1：将后台返回的json字符串转成js对象
+        // 作用2：对大数字进行安全处理
       return JSONbig.parse(data)
     } catch (err) {
       return data

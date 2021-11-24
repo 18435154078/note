@@ -2919,7 +2919,7 @@ app.run(8000, () => {
 
 
 
-## 十九、 mysql
+## 十九、 mysql（nodejs第三方包）
 
 https://www.npmjs.com/package/mysql
 
@@ -2937,7 +2937,7 @@ const mysql = require('mysql')
 // 配置参数
 const options = {
     host: 'localhost',
-    port: 3306,
+    port: 3306, // 选填，默认3306
     user: 'root',
     password: 'root',
     database: 'test'

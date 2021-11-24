@@ -1187,3 +1187,149 @@ vue2.0：通过`Object.defineProrerty`拦截各个属性，需要深层的遍历
 
 vue3.0：通过Proxy直接代理对象，直接监听对象，因此当对象添加属性时，视图也会直接更新，不再需要通过`this.$set`去添加属性来更新视图
 
+
+
+
+
+## 好用的vue组件库
+
+### 1. Vuetify(UI框架)
+
+官网：https://vuetifyjs.com/
+
+Vuetify是一个Vue UI库，附带手工制作的Material组件。这是一个专门根据Material Design规范开发的库，并且每个组件都采用移动优先的方法构建，因此既具有响应性又非常模块化。
+
+通过vue-cli将Vuetify添加到项目中简单到运行`vue add vuetify`即可。
+
+作为一个完整的框架，Vuetify具有以下功能：
+
+- 数百种默认样式和动画
+- UI组件，如提示框、横幅、按钮、导航等
+- 内置指令处理用户操作，如点击、滚动、调整大小等。
+
+我个人喜欢Vuetify主要基于以下两个原因。
+
+首先，它拥有构建应用程序所需的一切。
+
+其次，Vuetify的文档目前是最好的。借助全面的示例和在线资源指南，使用Vuetify进行开发就不用自己摸索了。
+
+此外，作为最大的Vue框架之一，围绕Vuetify的社区非常棒，论坛上有成千上万的开发人员回答关于开发的所有问题。
+
+Vuetify正在从头开始重建整个框架，以支持Vue 3和Composition API。
+
+### 2. Bootstrap Vue(UI框架)
+
+官网：https://code.z01.com/bootstrap-vue/
+
+Bootstrap是最受欢迎的免费和开源CSS和JS框架之一，可帮助开发人员构建响应式应用程序。
+
+BootStrapVue使用Vue 2.6来提供Bootstrap v4组件和网格系统的实现，将Bootstrap所有惊人的优势带到Vue环境中。
+
+最著名的是Bootstrap（以及 BootstrapVue）为使用基于网格系统的响应式设计提供了一个很好的解决方案。它允许开发人员根据屏幕改变DOM元素的大小。
+
+### 3. Vue Material(UI框架)
+
+欣赏不了
+
+Vue Material是一款轻量级的库，完全按照Material Design规范构建。
+
+功能如下：
+
+- 为应用程序提供免费的内置主题
+- 支持Vue路由器
+- 数十个基本组件，如菜单、进度条和表单
+
+并且，将Nuxt.js或Webpack等其他工具与Vue Material集成也很容易，从而使得渲染和部署等工作变得更为简单。
+
+### 4. Quasar(UI框架)
+
+欣赏不了
+
+Quasar是一个基于Vue.js的开源框架，允许开发人员为几乎所有平台构建响应式应用程序。Quasar有内置的功能可以在构建模式之间切换。
+
+这意味着你可以制作SPA、PWA和SSR应用，甚至可以制作移动应用、桌面应用和浏览器扩展！
+
+真的很牛了！
+
+Quasar自带你想要从前端框架中获得的一切：
+
+- 可定制的样式，包括明暗模式支持
+- 基于网格的布局系统，可用于创建响应式app
+- 专为性能和响应而设计的100+个Vue组件
+- 内置TreeShaking优化以支持最佳实践
+
+### 5. Buefy(UI框架)
+
+官网：https://buefy.org/
+
+Buefy是一个基于Bulma CSS框架的开源轻量级Vue框架。
+
+Bulma是现代CSS框架，允许开发人员直观地创建响应式组件。使用简单的英文类名，很容易一目了然地知道类名究竟如何影响元素的样式。
+
+Buefy通过为开发人员提供数十个内置组件，例如按钮、下拉菜单、分页等，将Bulma的简单性带入Vue。
+
+我个人喜欢Buefy构建响应式列布局的方便性。你所要做的就是创建带有一类列的容器，然后为每一列创建带有一类列的`div`。
+
+这些列的宽度都相同
+
+```vue
+<div class="columns">
+    <div class="column">First column</div>
+    <div class="column">Second column</div>
+    <div class="column">Third column</div>
+    <div class="column">Fourth column</div>
+</div>
+```
+
+只要有这样的代码，每列的宽度都将自动相同，并且还可以响应移动设备！
+
+### 6. vue-easytable（表格组件）
+
+https://happy-coding-clans.github.io/vue-easytable/#/en/demo
+
+表格组件具有许多内置功能，比如说，单元格省略号、固定/灵活的列大小调整、自定义过滤等等，可能你甚至都没有意识到这些需要。
+
+### 7. vue-dataset（表格组件）
+
+demo：https://vue-dataset-demo.netlify.app/
+
+vue-dataset集合了6个Vue组件，用于在Vue中显示具有内置过滤、分页、排序甚至自定义搜索功能的列表。
+
+### 8. vue-simple-spinner（加载器）
+
+demo：https://dzwillia.github.io/vue-simple-spinner/examples/
+
+vue-simple-spinner正如其名，是一个简单且可自定义的微调组件，允许你控制微调器的大小、颜色、速度和文本。
+
+### 9. vue-progress-path（加载器）
+
+官网：https://madewithvuejs.com/vue-progress-path
+
+如果你想创建自定义的、有趣的加载器，那么vue-progress-path是你的完美选择。
+
+它最酷的功能是你可以将你自己的.svg文件传递给它，它再根据这个svg的形状创建加载器。
+
+看看其中的一些可能性吧！
+
+### 10. vue-splash（加载期间的动画）
+
+vue-splash允许你在等待内容加载时显示启动画面。
+
+只需一个快速组件，就可以显示logo、一些文本并更改页面的背景颜色。
+
+启动画面的代码示例如下：
+
+```js
+<vue-splash
+    :show="true"
+    :logo="logo"
+    title="Your Magnificent App Name"
+    color="#00bfa5"
+    :size="300"
+    :fixed="true"
+/>
+```
+
+### 11. Sweet-modal-vue（模态框组件）
+
+官网：https://sweet-modal-vue.adepto.as/

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vnode</title>
+  <style>
+  </style>
+</head>
+<script src="./Vnode.js"></script>
+<body>
+  <div id="app"></div>
+  <div class="box" style="width: 200px;height: 200px;background:red"></div>
+</body>
+<script>
+  var box = document.querySelector('.box')
+  box.onclick = function() {
+    function fn() {
+      console.log(this).bind()
+    }
+    fn()
+  }
+
+  let maxWidth = window.innerWidth > 450 ? 450 : window.innerWidth
+  document.querySelector('html').style.fontSize = 0.032 * maxWidth + 'px'
+  window.onresize = function() {
+    let maxWidth = window.innerWidth > 450 ? 450 : window.innerWidth
+    document.querySelector('html').style.fontSize = 0.032 * maxWidth + 'px'
+  }
+  const vNode = createElement('div', {
+    id: 'test',
+    // '@click': alert(1)
+  },[
+    createElement('p', { class: 'p1', key: 'a', style: { 'font-size': '2rem', 'font-weight': '600' } }, '测试节点'),
+    createElement('p', { class: 'p2', key: 'b' }, '测试节点2'),
+    createElement('p', { class: 'p3', key: 'c', style: {color: 'red'} }, '测试节点3'),
+    createElement('p', { class: 'p4', key: 'd' }, '测试节点4'),
+    createElement('p', { class: 'p5', key: 'e' }, '测试节点5')
+  ])
+  const node = createElement(null, {}, 'hello')
+  render(vNode, '#app')
+
+  // var arr = []
+  // for(let i = 1; i <= 1000; i++) {
+  //   arr.push(i)
+  // }
+  // function remove(arr) {
+  //   var arrNum = []
+  //   if(arr.length > 1) {
+  //     arr.forEach((item, index) => {
+  //       if(index % 2 == 0) {
+  //         if(index == arr.length - 1 ) {
+  //           arrNum.unshift(item)
+  //         } else {
+  //           arrNum.push(item)
+  //         }
+  //       }
+  //     })
+  //     remove(arrNum)
+  //   } else {
+  //     console.log(arr[0])
+  //   }
+  // }
+  // remove(arr)
+
+
+
+  function Person(name) {
+    this.name = name
+  }
+  Person.prototype.sayName = function () {
+    console.log(this.name)
+  }
+  let person = new Person('mary')
+  person.sayName()
+
+</script>
+<script>
+//   function fn()  {  
+//     this.user = '追梦子';  
+//     return {};  
+// }
+// var a = new fn;  
+// console.log(a.user); //undefined
+
+// function Hello(name) {
+//   this.name = name
+//   return function () {
+//     return 1
+//   }
+// }
+// let hello = new Hello('hello world')
+// console.log(hello)
+
+
+// var obj = {
+//   name: 'hello'
+// }
+// var name = 'world'
+// function fn(num1, num2) {
+//   console.log(this.name, num1 + num2)
+// }
+// fn.bind(obj)(1, 2)
+
+// var obj = {
+//   name: 'hello'
+// }
+// var name = 'world'
+// function fn(num1, num2) {
+//   console.log(this.name, num1 + num2)
+// }
+// fn.apply(obj, [1, 2])
+
+var obj = {
+  name: 'hello'
+}
+var name = 'world'
+function fn(num1, num2) {
+  console.log(this.name, num1 + num2)
+}
+// fn.call(obj, 1, 2)
+// fn.bind(obj)(1, 2)
+// fn.call(obj, 1, 2)
+fn.apply(obj, [1, 2])
+
+</script>
+</html>

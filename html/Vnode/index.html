@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vnode</title>
+    <style>
+        #app {
+            position: absolute;
+            top: 30px;
+            opacity: 1;
+            animation: transforms2 0.1s;
+        }
+        #app:hover {
+            animation: transforms 1.2s;
+            top: 0px;
+            opacity: 0;
+        }
+        @keyframes transforms {
+            0% {
+                top: 30px;
+                opacity: 1;
+            }
+            100% {
+                top: 0px;
+                opacity: 0;
+            }
+        }
+        @keyframes transforms2 {
+            0% {
+                top: 0px;
+                opacity: 0;
+            }
+            100% {
+                top: 30px;
+                opacity: 1;
+            }
+        }
+        .showSlow {
+            display: inline;
+        }
+        @keyframes line {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+        #line {
+            animation: line 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="swiper-slide">
+        <div class="showSlow"></div>
+        <span id="line">|</span>
+    </div>
+    <!-- <div id="hello"></div> -->
+</body>
+<script src="./node_modules/moment/moment.js"></script>
+<script src="./jquery.js"></script>
+<script src="./swiper-3.4.2.jquery.min.js"></script>
+<script>
+    class ShowWord {
+        constructor(word, el, time) {
+            this.word = word,
+            this.vm = document.querySelector(el)
+            this.time = time
+        }
+        init() {
+            // 初始化
+            this.createWord()
+            this.hideWord()
+            this.wordInterval()
+        }
+        createWord() {
+            // 生成word结构
+            let result = ''
+            for(var i = 0; i < text.length; i++) {
+                result += `<span class="span${i} hide">${text[i]}</span>`
+            }
+            this.renderWord(result)
+        }
+        renderWord(word) {
+            // 渲染页面
+            this.vm.innerHTML = word
+        }
+        hideWord() {
+            // 隐藏页面的文字
+            Array.from(document.querySelectorAll('.hide')).forEach(item => {
+                item.style.display = 'none'
+            })
+        }
+        wordInterval() {
+            // 定时显示页面上的文字
+            let index = 0
+            let timer = setInterval(() => {
+                $(document.querySelector('.span' + index)).show()
+                if(index > text.length) {
+                    clearInterval(timer)
+                    // console.log('定时器关闭')
+                    line.style.display = 'none'
+                }
+                index++
+            }, this.time)
+        }
+    }
+    var text = '心想在这花好月圆的日子，若能和自己的家人一起，共同赏月，品尝美酒，同时能走在一片片美丽的桂花林中，这将是一幅美轮美奂，惟妙惟肖的画，在这美景下，我们可以对家人说出自己内心的悄悄话，不用担心太多，不用顾忌太多，因为这美好的日子都是上帝为我们所预备的，我们可以尽情享受人生，品尝人生中每一个美的瞬间，拥抱生活，享受生活！生活原本是多姿多彩的，在于我们是否善于去发现，精彩无处不在，内心的感动也无处不在，让我们拥抱自然，拥抱大地，快乐的度过每一天，用心灵去感受自然的美，感受人生的每一个精彩瞬间。'
+    let showWord = new ShowWord(text, '.showSlow', 150)
+    showWord.init()
+</script>
+
+<script>
+    const vNode = {
+        tag: 'div',
+        attrs: {
+            id: 'test',
+        },
+        children: [
+            {
+                tag: 'span',
+                attrs: {
+                    class: 'hello',
+                    style: 'color: red'
+                },
+                children: 'hello world'
+            },
+            {
+                tag: 'div',
+                attrs: {
+                    id: 'world'
+                },
+                children: [
+                    {
+                        tag: 'img',
+                        attrs: {
+                            src: 'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fpic.51yuansu.com%2Fpic2%2Fcover%2F00%2F44%2F82%2F5814c05c1baee_610.jpg&refer=http%3A%2F%2Fpic.51yuansu.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1638953236&t=25a8fa9cc2fb398716e82f9167fd6303',
+                            onclick: 'handleClick()',
+                            style: 'width: 200px'
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    // function createElements(vNode) {
+    //     const tag = document.createElement(vNode.tag)
+    //     for(let attr in vNode.attrs) {
+    //         tag.setAttribute(attr, vNode.attrs[attr])
+    //     }
+    //     if(typeof vNode.children === 'object') {
+    //         vNode.children.forEach(item => {
+    //             tag.appendChild(createElements(item))
+    //         })
+    //     } else {
+    //         tag.innerText = vNode.children
+    //     }
+    //     return tag
+    // }
+    // function render(el, vNode) {
+    //     typeof el === 'string' ? document.querySelector(el).appendChild(vNode) : el.appendChild(vNode)
+    // }
+    // render(document.querySelector('#app'), createElements(vNode))
+
+    // console.log(moment('2020-02-21', 'DD').fromNow())
+
+    // function handleClick() {
+    //     alert('hello world')
+    // }
+</script>
+</html>

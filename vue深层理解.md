@@ -699,9 +699,93 @@ export default {Store, install}
 
 ## 七、 vue源码及实现原理
 
+### 1. `Object.defineProperty`
+
+```js
+const obj = {}
+Object.defineProperty(obj, 'name', {
+    get: () => {
+        console.log('有人想获取')
+    },
+    set: (aa) => {
+        console.log(aa)
+    }
+})
+obj.name // 有人想获取
+obj.name = 'hello' // console.log(hello)
+```
+
+### 2. 简版vue
 
 
 
 
 
 
+
+## 八、Vnode（虚拟DOM）
+
+
+
+
+
+
+
+
+
+## 任务、微任务、队列和计划
+
+<a href="https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/">https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/</a>
+
+```js
+console.log('script start');
+
+setTimeout(function () {
+  console.log('setTimeout');
+}, 0);
+
+Promise.resolve()
+  .then(function () {
+    console.log('promise1');
+  })
+  .then(function () {
+    console.log('promise2');
+  });
+
+console.log('script end');
+```
+
+- Tasks：宏任务
+
+- Microtasks：微任务
+
+- JS stack：js执行栈
+
+- Log：输出
+
+
+
+实现流程：
+
+- script脚本加入Tasks（宏任务）中，执行JS stack 
+
+- 输出`script start`
+
+- 将setTimeout加入Tasks（宏任务）中
+
+- 将Promise回调放到Microtasks（微任务）中
+- 输出`script end`
+- script脚本**退出**JS stack 
+
+- Promise1 then执行JS stack
+- 输出`promise1`
+- promise返回underfind，将下一个promise任务加入Microtasks（微任务）队列
+- promise1**退出**JS stack
+- Promise2 then**执行**JS stack
+- 输出`promise2`
+- Promise2 then**退出**JS stack
+- 浏览器刷新
+- 执行setTimeout
+- setTimeout**执行**JS stack
+- 输出`setTimeout`
+- setTimeout退出JS stack
