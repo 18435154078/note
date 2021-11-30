@@ -41,15 +41,13 @@
     <svg>
         <path id="path1" d="M 50, 50 L 50, 150 L 150, 150 L 150, 50 Z" fill="none" stroke="red"></path>
     </svg>
-    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
-        <text x="20" y="30" fill="red">
+    <svg width="300" height="300">
+        <text id="text" x="20" y="30" fill="red">
             <textPath xlink:href="#path1">
                 helloworldhelloworldhelloworldhelloworld
             </textPath>
         </text>
+        <use href="#text" x="100" y="100"></use>
     </svg>
-    <!-- <svg>
-        <img src="https://img1.baidu.com/it/u=1719063513,2559625643&fm=26&fmt=auto" alt="" />
-    </svg> -->
 </body>
 </html>

@@ -3040,15 +3040,50 @@ connection.query(strSql, (err, result) => {
 })
 ```
 
-
-
 ##### 3.2.3 删除数据
 
+sql
 
+```sql
+delete from student where id = 3
+```
+
+nodejs
+
+```js
+const strSql = `delete from student where id > 3`;
+(async function() {
+    const res = await sql(strSql, [])
+    console.log(res)
+})()
+```
+
+- delete from 数据表 条件
 
 #### 3.3 改
 
+##### 3.3.1 修改数据表
 
+sql语句
+
+```sql
+update student set age = 11, student_name = null where id = 3
+```
+
+nodejs
+
+```js
+const strSql = `update student set student_name = ?, age = ? where id = ?`;
+(async function() {
+    const res = await sql(strSql, [null, 123, 1])
+    console.log(res)
+})()
+```
+
+- undate 表名 set 需要修改的字段
+- 如果有多个字段之间逗号隔开
+- 如果是空值，直接给null
+- where查找条件
 
 #### 3.4 查
 
@@ -3132,21 +3167,228 @@ function getData(sql, arr) {
 
 #### 4.1 范式：
 
-
+- **第一范式(1NF)**
+  - **表中的列只能含有原子性(不可再分)的值。**
+- **第二范式(2NF)**
+  - **满足第一范式**
+  - **没有部分依赖**
+- **第三范式(3NF)**
+  - **满足第二范式**
+  - **没有传递依赖**
 
 #### 4.2 关系：
 
-
+表与表之前的关联
 
 #### 4.3 连表查询
 
 ```sql
+-- 不会默认填充
 select * from teacher inner join student (on teacher.name = "老王")
--- 以左边为准
-select * from teacher right join student on teacher.name = "老王"
--- 以右边为准
+-- 以左边为准（右边空缺默认用null填充）
+select * from teacher left join student on teacher.name = "老王"
+-- 以右边为准（左边空缺默认用null填充）
 select * from teacher right join student on teacher.name = "老王"
 ```
 
+中间表链表查
 
+学生表：student
+
+| id   | name | age  |
+| ---- | ---- | ---- |
+| 1    | 小明 | 12   |
+| 2    | 小红 | 15   |
+
+老师表：teacher
+
+| id   | name | project |
+| ---- | ---- | ------- |
+| 1    | 老王 | java    |
+| 2    | 老李 | 前端    |
+
+老师学生关系表：teacher_and_student
+
+| id   | teacher_id | student_id |
+| ---- | ---------- | ---------- |
+| 1    | 1          | 1          |
+| 2    | 2          | 1          |
+| 3    | 2          | 2          |
+
+```sql
+select * from teacher inner join student inner join teacher_and_student where teacher.id = teacher_and_student.teacher_id and student.id = teacher_and_student.student_id and teacher.project = '前端';
+```
+
+| id   | name | id(1) | name(1) | age  | teacher_id | student_id |
+| ---- | ---- | ----- | ------- | ---- | ---------- | ---------- |
+| 2    | 老李 | 前端  | 1       | 12   | 2          | 1          |
+| 2    | 老李 | 前端  | 2       | 15   | 2          | 2          |
+
+```sql
+-- 查询某个字段
+select teacher.project, student.name from teacher inner JOIN student where student.name = '小明';
+```
+
+| project | name |
+| ------- | ---- |
+| java    | 小明 |
+| 前端    | 小明 |
+
+#### 4.4 自关联查询
+
+数据表结构
+
+| id   | parent_id | region | parent_type_id |
+| ---- | --------- | ------ | -------------- |
+| 1    | 0         | 中国   | 0              |
+| 2    | 1         | 北京   | 1              |
+| 3    | 1         | 安徽   | 1              |
+| 4    | 1         | 福建   | 1              |
+| 23   | 1         | 山西   | 1              |
+| 288  | 23        | 太原   | 2              |
+| 291  | 23        | 晋城   | 2              |
+
+##### 4.4.1 查询所有
+
+```sql
+select * from city_list as a inner join city_list as b where a.id = b.parent_id and a.region = '山西';
+```
+
+查询结果
+
+| id   | parent_id | region | parent_type_id | id(1) | parent_id(1) | region(1) | parent_type_id(1) |
+| ---- | --------- | ------ | -------------- | ----- | ------------ | --------- | ----------------- |
+| 23   | 1         | 山西   | 1              | 288   | 1            | 太原      | 1                 |
+| 23   | 1         | 山西   | 1              | 289   | 1            | 长治      | 1                 |
+| 23   | 1         | 山西   | 1              | 290   | 1            | 大同      | 1                 |
+| 23   | 1         | 山西   | 1              | 291   | 1            | 晋城      | 1                 |
+| 23   | 1         | 山西   | 1              | 292   | 1            | 晋中      | 1                 |
+| 23   | 1         | 山西   | 1              | 293   | 1            | 临汾      | 1                 |
+| 23   | 1         | 山西   | 1              | 294   | 1            | 吕梁      | 1                 |
+| 23   | 1         | 山西   | 1              | 295   | 1            | 朔州      | 1                 |
+| 23   | 1         | 山西   | 1              | 296   | 1            | 忻州      | 1                 |
+| 23   | 1         | 山西   | 1              | 297   | 1            | 阳泉      | 1                 |
+| 23   | 1         | 山西   | 1              | 298   | 1            | 运城      | 1                 |
+
+##### 4.4.2 查询省市
+
+```sql
+select a.region as '省', b.region as '市' from city_list as a inner join city_list as b where a.id = b.parent_id and a.region = '山西';
+```
+
+```js
+const strSql = `select * from city_list as a inner join city_list as b where a.id = b.parent_id and a.region = ?;`
+connection.query(strSql, ['山西'], (err, result) => {
+    console.log(result)
+})
+```
+
+
+
+| 省   | 市   |
+| ---- | ---- |
+| 山西 | 太原 |
+| 山西 | 长治 |
+| 山西 | 大同 |
+| 山西 | 晋城 |
+| 山西 | 晋中 |
+| 山西 | 临汾 |
+| 山西 | 吕梁 |
+| 山西 | 朔州 |
+| 山西 | 忻州 |
+| 山西 | 阳泉 |
+| 山西 | 运城 |
+
+适用场景：省市区，公司层级关系，电商分类层级关系等
+
+#### 4.5 子查询
+
+链表查询之后会出现一张新的表，可以在这张新表的基础上进行条件查询
+
+
+查不出来，报错
+
+```sql
+select * from city_list as a inner join city_list as b on a.id = b.parent_id where a.region = '山西' and b.id in (select * from city_list where id > 250)
+```
+
+### 5. 视图
+
+将一些复杂的查询语句进行封装，提高语句的重用性，就像一个函数一样，只要依赖的表发生变化，视图也会立即发生变化
+
+#### 5.1 生成视图
+
+```sql
+create view student_teacher_view as
+select teacher.name, teacher.project, student.name, student.age
+from teacher
+inner join student
+inner join teacher_and_student
+where teacher.id = teacher_and_student.teacher_id
+and student.id = teacher_and_student.student_id;
+```
+
+**注意**：表中的字段名不可重复否则无法生成视图
+
+#### 5.2 查询视图
+
+```sql
+select teacher_name, project from student_teacher_view;
+```
+
+### 6. 事务
+
+#### 6.1 什么是事务
+
+当一个业务逻辑需要多个sql完成时，如果其中某条sql语句出错，则希望整个操作都退回，使用事务可以完成退回的功能，保证业务逻辑的正确性
+
+事务四大特性(简称ACID)
+
+- 原子性(Atomicity)：事务中的全部操作在数据库中是不可分割的，要么全部完成，要么均不执行
+- 一致性(Consistency)：几个并行执行的事务，其执行结果必须与按某一顺序串行执行的结果相一致
+- 隔离性(Isolation)：事务的执行不受其他事务的干扰，事务执行的中间结果对其他事务必须是透明的
+- 持久性(Durability)：对于任意已提交事务，系统必须保证该事务对数据库的改变不被丢失，即使数据库出现故障
+
+#### 6.2 事务语句
+
+- begin：事务开启
+- commit：事务提交
+- rollback：事务回滚
+
+```sql
+begin;
+insert into student (student_name, age) values ('小绿', 76);
+insert into teacher (teacher_name, project) values ('老就是', 'node');
+commit;
+```
+
+```sql
+begin
+insert into student (student_name, age) values ('小绿', 76);
+insert into teacher (teacher_name, project) values ('老就是', 'node');
+commit;
+rollback
+```
+
+**注意**：
+
+- begin开启时，只有出现commit是，sql语句才会提交，否则将不会提交
+- 提交之后回滚将无效
+
+## express
+
+### express脚手架
+
+##### 安装命令
+
+```shell
+npm i express -g
+npm i express-generator -g
+```
+
+##### 生成脚手架
+
+```shell
+express myApp
+```
 

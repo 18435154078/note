@@ -635,3 +635,19 @@ js经典埋点：
 </script>
 ```
 
+## javascript免费网站
+
+现代javascript：https://zh.javascript.info/
+
+https://github.com/30-seconds/30-seconds-of-code
+
+https://github.com/leonardomso/33-js-concepts
+
+es6：https://es6.ruanyifeng.com/
+
+https://wangdoc.com/javascript/
+
+https://developer.mozilla.org/zh-CN/docs/Web/JavaScript
+
+ts：https://ts.xcatliu.com/
+

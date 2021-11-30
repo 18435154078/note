@@ -141,4 +141,116 @@ SVG文件可以直接插入网页，成为DOM的一部分，然后用JavaScript�
   - x：横坐标
   - y：纵坐标
   - fill：字体颜色，默认黑色
+  - stroke：描边
+  - stroke-width：边宽度
+
+## 9. 文本路径
+
+```html
+<svg>
+    <path id="path1" d="M 50, 50 L 50, 150 L 150, 150 L 150, 50 Z" fill="none" stroke="red"></path>
+</svg>
+<svg>
+    <text x="20" y="30" fill="red">
+        <textPath xlink:href="#path1">
+            helloworldhelloworldhelloworldhelloworld
+        </textPath>
+    </text>
+</svg>
+```
+
+## 10. 复制
+
+复制一个图形
+
+```html
+<svg width="300" height="300">
+    <text id="text" x="20" y="30" fill="red">
+        <textPath xlink:href="#path1">
+            helloworldhelloworldhelloworldhelloworld
+        </textPath>
+    </text>
+    <use href="#text" x="100" y="100"></use>
+</svg>
+```
+
+- 标签：use
+
+- 属性：
+  - href：复制一个id为text的图形
+  - x：复制后的横坐标
+  - y：复制后的纵坐标
+
+## 圆形进度条
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>环形进度条</title>
+    <style>
+        svg {
+            display: block;
+            margin: 200px auto 0;
+        }
+        .text {
+            font-size: 80px;
+            font-weight: 900;
+            fill: red;
+        }
+    </style>
+</head>
+<body>
+    <svg width="700" height="700">
+        <circle
+            cx="350"
+            cy="350"
+            r="300"
+            fill="none"
+            stroke="#ccc"
+            stroke-width="40"
+        ></circle>
+        <circle
+            class="progress"
+            cx="350"
+            cy="350"
+            r="300"
+            fill="none"
+            stroke="green"
+            stroke-width="40"
+            stroke-linecap="round"
+            stroke-dasharray="0, 10000"
+        ></circle>
+        <text x="350" y="350" class="text">0%</text>
+    </svg>
+    
+    <div onclick="progressInit()">click</div>
+</body>
+<script>
+    var text = document.querySelector('.text')
+    var progress = document.querySelector('.progress')
+    text.style.transform = `translate(-62px, 40px)`
+    
+    function progressInit() {
+        var step = 0
+        var timer = setInterval(() => {
+            step += 20
+            progress.setAttribute('stroke-dasharray', `${step}, 10000`)
+            text.innerHTML = Math.floor(step / 1900 * 100) + '%'
+            if(step === 1900) {
+                clearInterval(timer)
+            }
+        }, 20)
+    }
+</script>
+</html>
+```
+
+circle属性：
+
+- stroke-linecap：边框形状
+- stroke-dasharray：显示步长：第一个参数是实线的长度，第二个空线的长度，总长度为2πr
 
