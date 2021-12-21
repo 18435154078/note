@@ -18,7 +18,7 @@
     </style>
 </head>
 <body>
-    <svg width="700" height="700">
+    <!-- <svg width="700" height="700">
         <circle
             cx="350"
             cy="350"
@@ -39,25 +39,149 @@
             stroke-dasharray="0, 10000"
         ></circle>
         <text x="350" y="350" class="text">0%</text>
-    </svg>
+    </svg> -->
     
-    <div onclick="progressInit()">click</div>
+    <!-- <div onclick="progressInit()">click</div> -->
 </body>
 <script>
-    var text = document.querySelector('.text')
-    var progress = document.querySelector('.progress')
-    text.style.transform = `translate(-62px, 40px)`
+    // var text = document.querySelector('.text')
+    // var progress = document.querySelector('.progress')
+    // // text.style.transform = `translate(-62px, 40px)`
     
-    function progressInit() {
-        var step = 0
-        var timer = setInterval(() => {
-            step += 20
-            progress.setAttribute('stroke-dasharray', `${step}, 10000`)
-            text.innerHTML = Math.floor(step / 1900 * 100) + '%'
-            if(step === 1900) {
-                clearInterval(timer)
+    // function progressInit() {
+    //     var step = 0
+    //     var timer = setInterval(() => {
+    //         step += 20
+    //         progress.setAttribute('stroke-dasharray', `${step}, 10000`)
+    //         text.innerHTML = Math.floor(step / 1900 * 100) + '%'
+    //         if(step === 1900) {
+    //             clearInterval(timer)
+    //         }
+    //     }, 20)
+    // }
+
+    // console.time('a')
+    // for(let i = 0; i < 100000; i++) {
+
+    // }
+    // console.timeEnd('a')
+
+    Array.prototype.each = function(cb) {
+        for(let i = 0, len = this.length; i < len; i++) {
+            let index = i,
+                item = this[i]
+            let flag = cb(item, index)
+            if(flag === false) {
+                break
             }
-        }, 20)
+        }
     }
+    var arr = [1,2,3,4]
+    // arr.each((item, index) => {
+    //     if(item == 3) {
+    //         return false
+    //     }
+    //     console.log(item, index)
+    // })
+    // arr.forEach((item, index)=> {
+    //     if(item == 3) {
+    //         return false
+    //     }
+    //     console.log(item, index)
+    // })
+    // Object.prototype.each = function(cb) {
+    //     for(let k in this) {
+    //         let flag = cb(k, this[k])
+    //         if(flag === false) {
+    //             break
+    //         }
+    //     }
+    // }
+    let obj = {
+        name: 'hello', 
+        age: 12,
+        hobby: function() {
+            console.log(this.name + '今年' + this.age + '岁了')
+        }
+    }
+    // obj.each((k, v) => {
+    //     if(k == 'age') {
+    //         return false
+    //     }
+    //     console.log(k, v)
+    // })
+
+    let arr1 = {
+        0: 'hello',
+        1: 'world',
+        2: '你好',
+        length: 3
+    }
+    // function each(arr, cb) {
+    //     for(let i = 0, len = arr.length; i < len; i++) {
+    //         let flag = cb.call(arr, arr[i], i)
+    //         if(flag === false) {
+    //             break
+    //         }
+    //     }
+    // }
+    // each(arr1, function(item, index) {
+    //     console.log(item, index)
+    // })
+
+    let fn = () => {
+        console.log('11')
+    }
+    // console.log(fn.Prototype)
+
+    var str = 'qwoeoSO4W12';
+    str = str.replace(/[a-zA-Z]/g, (value) => {
+        return value = value === value.toLowerCase() ? value.toUpperCase() : value.toLowerCase()
+        console.log(value)
+        if(value == value.toLowerCase()) {
+            console.log(true)
+            return value.toUpperCase()
+        } else {
+            console.log(false)
+            return value.toLowerCase()
+        }
+    })
+    // console.log(str)
+
+    String.prototype.myIndexOf = function(key) {
+        let index = -1
+        let len = this.length
+        let length = key.length
+        for(let i = 0 ; i < len - length + 1; i ++) {
+            // console.log(this.substring(i, i+3))
+            if(this.substring(i, i + length) === key) {
+                index = i
+                // break
+            }
+        }
+        return index
+    }
+    String.prototype.myIndexOf2 = function(key) {
+        let reg = new RegExp(key)
+        let res = this.match(reg)
+        return res ? res.index : -1
+    }
+    var str = 'helloworld'
+    let index = str.myIndexOf2('llo')
+    // console.log(index)
+
+    var num = function() {
+        return 1
+    }
+    num.age = 3
+    // console.log(num.age)
+
+    var a = {}
+    var b = Symbol('123')
+    var c = Symbol('123')
+    a[b] = 'b'
+    a[c] = 'c'
+    console.log(a)
+
 </script>
 </html>

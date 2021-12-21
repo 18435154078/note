@@ -450,7 +450,7 @@ fs.stat('./data.txt',(err,state)=>{
 
 - 循环
 
-  ```javascript
+  ```html
   <script type="text/template" id="tp1">
       {{name}} <br/>
       {{each hobby}} {{$value}} {{/each}}
@@ -898,6 +898,8 @@ req.query
 
 ##### 1.3.2 post
 
+// **body-parser已弃用**
+
 post请求表单post提交方法时，获取请求参数的方法：
 
 express中没有内置获取post表单请求参数的api，需要借助第三方插件：`body-parser`
@@ -921,8 +923,59 @@ express中没有内置获取post表单请求参数的api，需要借助第三方
   req.body
   ```
 
+其他方法
+
+express自带的方法
+
+```js
+app.use(express.urlencoded())
+```
 
 ##### 1.3.3 路由模块
+
+app.js
+
+```js
+var express = require('express');
+var app = express();
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
+
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+```
+
+index.js
+
+```js
+var express = require('express');
+var router = express.Router();
+
+/* GET home page. */
+router.get('/home', function(req, res, next) {
+  res.render('index', { title: 'Express' });
+});
+
+module.exports = router;
+```
+
+**访问：http://localhost:3000/home**
+
+users.js
+
+```js
+var express = require('express');
+var router = express.Router();
+
+/* GET users listing. */
+router.get('/name', function(req, res, next) {
+  res.send('respond with a resource');
+});
+
+module.exports = router;
+```
+
+**访问：http://localhost:3000/users/name**
 
 
 
@@ -1744,6 +1797,25 @@ req.body.password = md5(md5(req.body.password))
       })
   })
   ```
+
+### 5. session
+
+#### 5.1 什么是session
+
+Session一般译作会话，在web应用的用户看来，他打开浏览器访问一个电子商务网站，登录、并完成购物直到关闭浏览器，这是一个会话。而在web应用的开发者开来，用户登录时我需要创建一个数据结构以存储用户的登录信息，这个结构也叫做session。因此在谈论session的时候要注意上下文环境。而本文谈论的是一种基于HTTP协议的用以增强web应用能力的机制或者说一种方案，它不是单指某种特定的动态页面技术，而这种能力就是保持状态，也可以称作保持会话。
+
+谈及session一般是在web应用的背景之下，我们知道web应用是基于HTTP协议的，而HTTP协议恰恰是一种无状态协议。也就是说，用户从A页面跳转到B页面会重新发送一次HTTP请求，而服务端在返回响应的时候是无法获知该用户在请求B页面之前做了什么的。
+
+对于HTTP的无状态性的原因，相关RFC里并没有解释，但联系到HTTP的历史以及应用场景，我们可以推测出一些理由：
+
+- 设计HTTP最初的目的是为了提供一种发布和接收HTML页面的方法。那个时候没有动态页面技术，只有纯粹的静态HTML页面，因此根本不需要协议能保持状态；
+- 用户在收到响应时，往往要花一些时间来阅读页面，因此如果保持客户端和服务端之间的连接，那么这个连接在大多数的时间里都将是空闲的，这是一种资源的无端浪费。所以HTTP原始的设计是默认短连接，即客户端和服务端完成一次请求和响应之后就断开TCP连接，服务器因此无法预知客户端的下一个动作，它甚至都不知道这个用户会不会再次访问，因此让HTTP协议来维护用户的访问状态也全然没有必要；
+- 将一部分复杂性转嫁到以HTTP协议为基础的技术之上可以使得HTTP在协议这个层面上显得相对简单，而这种简单也赋予了HTTP更强的扩展能力。事实上，session技术从本质上来讲也是对HTTP协议的一种扩展。
+
+总而言之，HTTP的无状态是由其历史使命而决定的。但随着网络技术的蓬勃发展，人们再也不满足于死板乏味的静态HTML，他们希望web应用能动起来，于是客户端出现了脚本和DOM技术，HTML里增加了表单，而服务端出现了CGI等等动态技术。
+
+
+
 ```markdown
   
   **注意**：表单的serialize()方法可直接获取到表单的提交信息
@@ -1767,18 +1839,23 @@ npm i express-session
 #### 5.2 引入
 
 ```js
-const express = require('express-session')
+const session = require('express-session')
 ```
 
 #### 5.3 配置
 
 ```js
+const session = require('express-session')
 app.use(session({
-    //配置加密字符串，在原有基础上，拼接上字符串
-    secret: 'hello',
-    resave: false,
-    //true：无论你是否使用session，我都默认给你一个session   false往session中存数据时才有session
-    saveUninitialized: true
+    secret: 'hello', // 可以随便写。 一个 String 类型的字符串，作为服务器端生成 session 的签名
+    name: 'token', // 保存在本地cookie的一个名字 默认connect.sid  可以不设置
+    resave: false, // 强制保存 session 即使它并没有变化,。默认为 true。建议设置成 false。
+    saveUninitialized: false, // 强制将未初始化的 session 存储。  默认值是true  建议设置成true
+    cookie: {
+        maxAge: 5000000 // 设置cookie过期时间只有http能看到
+    },
+    httpOnly: true, // 
+    rolling: true // 在每次请求时强行设置 cookie，这将重置 cookie 过期时间（默认：false）
 }))
 ```
 
@@ -1820,6 +1897,10 @@ app.use(session({
     <button onclick="location.assign('/login')" >登录</button>
 {{ /if }}
 ```
+
+
+
+
 
 
 
@@ -2031,6 +2112,16 @@ app.all('*', function(req, res, next) {
     res.header('Access-Control-Max-Age',1728000);//预请求缓存20天
     next(); 
 });
+```
+
+// 局部跨域
+
+```js
+api.use(function(req, res, next){
+    res.append('Access-Control-Allow-Origin', '*')
+    req.append('Access-Control-Allow-Contnet-Type', '*')
+    next()
+})
 ```
 
 
@@ -2489,8 +2580,6 @@ export default {
 **新建Tailoring.vue 调用封装好的组件:**
 
 这里我们先简单说一下思路，通过按钮触发事件打开我们的剪裁窗口，选择图片，点击上传之后，将地址回调回来，拿到地址就可以处理我们的业务了，比如随着表单一起将回调地址存入数据库等等。
-![在这里插入图片描述](C:\Users\admit\Desktop\备忘录\史上最全基于vue的图片裁剪vue-cropper使用_DT辰白-CSDN博客_vue-cropper_files\20201116175246409.png)
-![在这里插入图片描述](C:\Users\admit\Desktop\备忘录\史上最全基于vue的图片裁剪vue-cropper使用_DT辰白-CSDN博客_vue-cropper_files\20201116175414920.png)
 **Tailoring.vue：**
 
 ```java
@@ -3390,5 +3479,168 @@ npm i express-generator -g
 
 ```shell
 express myApp
+```
+
+
+
+
+
+## 二十、文件上传
+
+### 1. multer
+
+https://github.com/expressjs/multer/blob/master/README.md
+
+#### 1.1 文件信息
+
+| ey             | Description                                   | Note            |
+| -------------- | --------------------------------------------- | --------------- |
+| `fieldname`    | Field name specified in the form              |                 |
+| `originalname` | Name of the file on the user's computer       |                 |
+| `encoding`     | Encoding type of the file                     |                 |
+| `mimetype`     | Mime type of the file                         |                 |
+| `size`         | Size of the file in bytes                     |                 |
+| `destination`  | The folder to which the file has been saved   | `DiskStorage`   |
+| `filename`     | The name of the file within the `destination` | `DiskStorage`   |
+| `path`         | The full path to the uploaded file            | `DiskStorage`   |
+| `buffer`       | A `Buffer` of the entire file                 | `MemoryStorage` |
+
+#### 1.2 multer
+
+| Key             | Description                          |
+| :-------------- | :----------------------------------- |
+| dest or storage | 文件存储路径                         |
+| fileFilter      | 函数来控制接受哪些文件               |
+| limits          | 上传数据的限制（文件大小）           |
+| preservePath    | 保留文件的完整路径，而不只是基本名称 |
+
+#### 1.3 multer类型
+
+- single：单文件
+
+- array：多文件
+
+- fields：多文件多字段，接受由字段指定的文件混合。带有文件数组的对象将存储在req.files中。
+
+  字段应该是一个具有名称和maxCount(可选)的对象数组。例子:
+
+  ```js
+  none[
+    { name: 'avatar', maxCount: 1 },
+    { name: 'gallery', maxCount: 8 }
+  ]
+  ```
+
+- none：只接受文本字段。如果上传任何文件，将发出代码为“LIMIT_UNEXPECTED_FILE”的错误。
+- any：
+
+### 2. 上传方式
+
+#### 1.3.1 form表单提交
+
+- 客户端
+
+  ```html
+  <body>
+      <!--声明类型为文件类型  enctype="multipart/form-data"-->
+      <form action="/uploadForm" method="post" enctype="multipart/form-data">
+          <input type="file" name="home">
+      </form>
+  </body>
+  <script>
+  let formUpfile = document.querySelector('form')
+  formUpfile.onchange = function() {
+  	this.submit()
+  }
+  </script>
+  ```
+
+- 服务端
+
+  ```js
+  const multer = require('multer')
+  const upload = multer({dest: './public/upload', limits: {fileSize: 1024*1024*20, files: 4}})
+  
+  app.post('/uploadForm', upload.single('home') , (req, res) => {
+      // 原文件路径
+      const filePath = './public/upload/' + req.file.filename
+      // 修改后的路径
+      const newFilePath = './public/upload/' + req.file.originalname
+      fs.rename(filePath, newFilePath, (err) => {
+          if(err) return
+          res.send(`
+              <h1>上传成功</h1>
+              <img src="${'/upload/' + req.file.originalname}" />
+          `)
+      })
+  })
+  ```
+
+#### 1.3.2 ajax提交
+
+- 客户端
+
+  ```html
+  <body>
+      <img class="img" src="" alt="">
+      <input type="file" multiple />
+  </body>
+  <script>
+  	let file = document.querySelector('input')
+      file.onchange = function() {
+          let blob = window.URL.createObjectURL(this.files[0])
+          // 上传之前预览
+          // document.querySelector('img').src = blob
+          let fs = new FormData()
+          fs.append('home', file.files[0])
+          $.ajax({
+              method: 'POST',
+              url: '/upload',
+              data: fs,
+              // 告诉jQuery不要去处理发送的数据
+              processData: false,
+              // 告诉jQuery不要去设置Content-Type请求头
+              contentType: false,
+              success: function(data) {
+                  // 上传后预览
+                  document.querySelector('img').src = data.imgUrl
+              }
+          })
+      }
+  </script>
+  ```
+
+- 服务端
+
+  ```js
+  const multer = require('multer')
+  const upload = multer({dest: './public/upload', limits: {fileSize: 1024*1024*20, files: 4}})
+  
+  app.post('/upload', upload.single('home') , (req, res) => {
+      // console.log(req.files)
+      const filePath = './public/upload/' + req.file.filename
+      const newFilePath = './public/upload/' + req.file.originalname
+      fs.rename(filePath, newFilePath, (err) => {
+          if(err) return
+          res.json({statu: 200, msg: 'ok', imgUrl: '/upload/' + req.file.originalname})
+      })
+  })
+  ```
+
+### 3. 下载
+
+res.download有三个参数：
+
+- 下载路径
+- 下载后的名字
+- 回调
+
+```js
+app.get('/download', (req, res) => {
+    res.download('./public/upload/ggg.png', 'html.png', (err) => {
+        if(err) return
+        console.log('下载')
+    })
+})
 ```
 

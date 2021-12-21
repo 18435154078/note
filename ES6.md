@@ -235,7 +235,11 @@ console.log(Object.assign({c: 1}, {a: 1}, {b: 2})) // {c: 1, a: 1, b: 2}
 
 ### 9. Symbol类型
 
-一旦声明，就表示独一无二的值，最大的用途就是用来定义对象的私有变量，
+一旦声明，就表示独一无二的值，最大的用途就是用来定义对象的私有变量，symbol值从产生开始就是唯一的：
+
+```js
+Symbol('name') == Symbol('name') // false
+```
 
 ```js
 let person = {}

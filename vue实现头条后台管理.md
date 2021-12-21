@@ -840,7 +840,7 @@ axios({
 
 ### 1. 获取文件对象
 
-```js
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -866,7 +866,7 @@ input表单加上 `multiple` 属性，可以同时选择多个文件
 
 ### 3. 如果上传的是图片，上传之后需要立即预览时
 
-```js
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -892,7 +892,7 @@ input表单加上 `multiple` 属性，可以同时选择多个文件
 
 ### 4. 将文件提交给后端
 
-```js
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
