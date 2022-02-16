@@ -727,6 +727,179 @@ obj.name = 'hello' // console.log(hello)
 
 
 
+## 九、数据劫持以及数据代理
+
+### `Object.defineProperty`
+
+```js
+var obj = {
+    name: 'bob',
+    age: 12,
+}
+var hobby = '吃'
+Object.defineProperty(obj, 'hobby', {
+    // value: '吃',
+    configurable: true,  //配置是否允许被删除 true(默认值) 可以被删除，false 不能被删除
+    enumerable: true,    //配置是否允许被枚举 true(默认值) 可以被枚举，false 不能被枚举
+    get() {
+        console.log('有人取值了')
+        return hobby
+    },
+    set(value) {
+        console.log('有人改值了', value)
+        hobby = value
+    }
+})
+```
+
+- 追加的对象
+- 追加的属性
+- 属性配置
+
+属性配置项：
+
+- `value`：属性值
+
+- `configurable`：配置是否允许被删除 true(默认值) 可以被删除，false 不能被删除
+- `enumerable`：配置是否允许被枚举 true(默认值) 可以被枚举，false 不能被枚举
+- `get`：getter配置
+- `set`：setter配置
+
+### `Object.defineProperties`
+
+```js
+var obj = {
+    name: 'bob',
+    age: 12,
+}
+var hobby = '吃'
+Object.defineProperties(obj, {
+    hobby: {
+        get() {
+            return hobby
+        },
+        set(value) {
+            hobby = value
+        }
+    },
+    num: {
+        configurable: true,
+        get() {
+            return num
+        },
+        set(value) {
+            num = value
+        }
+    }
+})
+```
+
+- 追加的对象
+- 追加的属性
+
+属性配置项：
+
+- `value`：属性值
+
+- `configurable`：配置是否允许被删除 true(默认值) 可以被删除，false 不能被删除
+- `enumerable`：配置是否允许被枚举 true(默认值) 可以被枚举，false 不能被枚举
+- `get`：getter配置
+- `set`：setter配置
+
+
+
+## 十、key的作用和原理（面试题）
+
+react和vue中的key有什么作用？
+
+虚拟DOM中的作用：
+
+- key是虚拟DOM对象的标识，当数据发生变化是，vue会根据新数据生成`新的虚拟DOM`，随后vue进行新旧虚拟DOM的差异比较（diff算法），比较规则如下：
+  - 对比规则：
+    - 旧虚拟DOM找到与新虚拟DOM相同的key：
+      - 若虚拟DOM内容没有变化，直接使用之前的真实DOM
+      - 若虚拟DOM内容发生变化，则生成新的真实DOM，最后替换旧的真实DOM
+    - 旧虚拟DOM中没有找到相同的key
+      - 创建真实DOM，随后渲染到页面
+
+用index作为key可能会引发的问题
+
+- 若对数据进行排序，头部删除或添加等破坏顺序的操作会导致效率问题
+- 若结构中包含输入类的DOM，可能会引发严重的界面问题
+
+开发过程中如何选择key
+
+- 最好使用每条数据的唯一标识为key，如id，手机号，学号，身份证号等
+- 若不对数据进行排序，头部删除或添加等破坏顺序的操作，只做展示，用index是没问题的
+
+
+
+## 十一、vue是怎样监测数据改变的
+
+vue的观察者模式
+
+### 数组
+
+Vue 将被侦听的数组的变更方法进行了包裹，所以它们也将会触发视图更新。这些被包裹过的方法包：
+
+- `push()`
+- `pop()`
+- `shift()`
+- `unshift()`
+- `splice()`
+- `sort()`
+- `reverse()`
+
+
+
+### 对象
+
+```js
+const obj = {
+    name: 'jerry',
+    age: 10
+}
+const vm = {}
+function Observer(data) {
+    const keys = Object.keys(data)
+    keys.forEach(item => {
+        this.enumerate(data,item)
+    })
+}
+Observer.prototype.enumerate = function(data, item) {
+    Object.defineProperty(this, item, {
+        enumerable: true,
+        get() {
+            return data[item]
+        },
+        set(newVal) {
+            data[item] = newVal
+        }
+    })
+}
+const obs = new Observer(obj)
+
+vm._data = obs
+Object.keys(vm._data).forEach(item => {
+    Object.defineProperty(vm, item, {
+        get() {
+            return obj[item]
+        },
+        set(newVal) {
+            obj[item] = newVal
+        }
+    })
+})
+```
+
+#### vue给一个对象添加属性
+
+`Vue.set(目标对象, key, value)`
+
+`vm.$set(目标对象, key, value)`
+
+
+
 
 
 

@@ -2100,6 +2100,8 @@ C:\Users\admit\Desktop\JavaScript\node\node模块\00-http.js
 
 ### 2. 跨域
 
+// 全局跨域
+
 ```js
 app.all('*', function(req, res, next) {
 　　//设置允许跨域的域名，*代表允许任意域名跨域
@@ -3644,3 +3646,16 @@ app.get('/download', (req, res) => {
 })
 ```
 
+
+
+
+
+
+
+## 权限管理
+
+权限管理数据表
+
+- 用户表
+- 角色表
+- 权限表
