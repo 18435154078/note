@@ -563,6 +563,8 @@ new Vue({
 
 <a href="./img/vue钩子函数.png">点击弹出图片</a>
 
+<img src="./img/生命周期.png" />
+
 ## 八、 `this.$nextTick`
 
 当DOM被修改时，不会及时更新，此时如果直接获取DOM，拿到的是修改之前的DOM。此时就需要用到`this.$nextTick`
@@ -1173,7 +1175,9 @@ actions: {
 
 
 
-## vue3.0对于2.0有什么优点
+## vue3.0
+
+### vue3.0对于2.0有什么优点
 
 #### 1. 速度快
 
@@ -1195,11 +1199,131 @@ vue3.0：通过Proxy直接代理对象，直接监听对象，因此当对象添
 
 
 
-### v-model修饰符
 
-- number：数字类型
-- lazy：失去焦点时触发响应式
-- trim：去除前后空格
+
+
+
+
+
+## 指令
+
+### 内置指令
+
+- v-model：
+  - number：数字类型
+  - lazy：失去焦点时触发响应式
+  - trim：去除前后空格
+
+- v-text
+- v-html
+- v-cloak
+  - 本质上是一个特殊的属性，vue实例创建完毕后会删除该属性
+  - 用于网络加载过慢时，避免出现`{{ 插值语法 }}`
+
+- v-once：该标签值渲染一次，初始化后不再修改
+- `v-pre`：具有`v-pre` 标签的结构，跳过vue的编译，直接呈现代码
+
+### 自定义指令
+
+#### (1) 普通函数形式
+
+```js
+// 封装一个v-text的自定义指令
+directives: {
+    hello(element, binding) {
+        element.innerText = binding.value
+    }
+}
+```
+
+- 指令接收两个参数：
+  - 绑定元素的真实DOM
+  - 绑定的信息
+- 调用时机
+  - 页面加载时调用
+  - 所在组件数据变化时调用
+
+### （2）钩子函数形式
+
+```js
+directives: {
+    hello: {
+        bing: (element, binding) {
+            // 绑定时调用
+        },
+        inserted: (element, binding) {
+            // 放入页面时调用
+        },
+        update: (element, binding) {
+            // 更新时调用
+        }
+    }
+}
+```
+
+**注意**：
+
+- 自定义指令中的this指向window，通过指令将值传入
+- 指令可用`-`链接，不可用驼峰命名
+
+
+
+## 组件注册方式
+
+### 全局组件
+
+```js
+Vue.component('HelloWorld', {
+    template: `<div>hello组件</div>`
+})
+new Vue({
+    template: `<Hello-world />`
+})
+```
+
+### 局部组件
+
+```js
+new Vue({
+    template: `<Hello />`,
+    component: {
+        Hello: {
+            template: `<div>hello组件</div>`
+        }
+    }
+})
+```
+
+```js
+const Hello = Vue.extend({
+    name: 'myName', // 修改开发者工具中组件的名称
+    template: `<div>hello组件</div>`
+})
+new Vue({
+    template: `<Hello />`,
+    component: {
+        Hello
+    }
+})
+```
+
+```js
+const Hello = {
+    name: 'myName', // 修改开发者工具中组件的名称
+    template: `<div>hello组件</div>`
+}
+new Vue({
+    template: `<Hello />`,
+    component: {
+        // 传入的是一个对象，这里会自动执行Vue.extend
+        Hello
+    }
+})
+```
+
+
+
+
 
 
 
