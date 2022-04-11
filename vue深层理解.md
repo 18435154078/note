@@ -921,6 +921,160 @@ Object.keys(vm._data).forEach(item => {
 
 
 
+## 自定义事件
+
+谁绑定，需要通过谁触发
+
+- 绑定：`$emit()`
+- 触发：`$on()`
+
+### 绑定自定义事件
+
+- 普通自定义事件处理
+
+  
+
+  父组件
+
+  ```vue
+  <template>
+  	<div>
+          {{ name }}
+          <Student @atguigu="receive"></Student>
+      </div>
+  </template>
+  <script>
+      export default {
+          data() {
+              return {
+                  name: '尚硅谷'
+              }
+          },
+          components: {
+              Student
+          },
+          methods: {
+              receive(value) {
+                  console.log(value)
+              }
+          }
+      }
+  </script>
+  ```
+
+  子组件
+
+  ```vue
+  <template>
+  	<div>
+          {{ name }}
+          <button @click="sendSchoolName">点击向父组件传递name值</button>
+      </div>
+  </template>
+  <script>
+      export default {
+          data() {
+              return {
+                  name: '尚硅谷'
+              }
+          },
+          components: {
+              Student
+          },
+          methods: {
+              receive(value) {
+                  console.log(value)
+              }
+          }
+      }
+  </script>
+  ```
+
+- ref处理
+
+  更灵活，可以在某种情况触发之后绑定事件
+
+  父组件
+
+  ```vue
+  <template>
+  	<div>
+          {{ name }}
+          <Student ref="student"></Student>
+      </div>
+  </template>
+  <script>
+      export default {
+          data() {
+              return {
+                  name: '尚硅谷'
+              }
+          },
+          components: {
+              Student
+          },
+          methods: {
+              receive(value) {
+                  console.log(value)
+              }
+          },
+          mounted() {
+            this.$refs.student.$on('atguigu', this.receive)
+          }
+      }
+  </script>
+  ```
+
+  子组件
+
+  ```vue
+  <template>
+  	<div>
+          {{ name }}
+          <button @click="sendSchoolName">点击向父组件传递name值</button>
+      </div>
+  </template>
+  <script>
+      export default {
+          data() {
+              return {
+                  name: '尚硅谷'
+              }
+          },
+          components: {
+              Student
+          },
+          methods: {
+              receive(value) {
+                  console.log(value)
+              }
+          }
+      }
+  </script>
+  ```
+
+  `this.$refs.student.$once`：只触发一次
+
+### 解绑自定义事件
+
+谁绑定事件，在谁中解绑（子组件中）
+
+#### 解绑单个事件
+
+```js
+this.$off('atguigu')
+```
+
+#### 解绑多个事件
+
+```js
+this.$off(['atguigu']) // 解绑多个
+// 或
+this.$off() // 解绑全部自定义事件
+```
+
+**注意**：组件销毁之后，组件中的 `原生事件` 依然可以用，但是 `自定义事件` 将不再触发
+
 
 
 

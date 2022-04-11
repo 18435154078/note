@@ -394,3 +394,121 @@ obj.each((k, v) => {
 - `document.documentElement.scrollTop`
 - `window.pageYOffset`
 
+## 7. `var`, `let`, `const`区别
+
+`var`：变量提升，变量穿透，全局定义的变量挂载在window上
+
+`let`：块级作用域
+
+`const`：块级作用域，不能重复定义，不能修改值
+
+## 8. 原型链和继承
+
+- 数组和对象没有原型，有原型链
+
+- 函数本身是有原型的
+
+```js
+function Add() {}
+Add.prototype.say = function(){alert('我是add的原型方法')}
+const a = new Add()
+a.say() // alert
+a.__proto__ === Add.prototype // true
+```
+
+- 实例对象a本身没有原型
+- 实例对象的 `__proto__` 指向构造函数的原型
+- 实例对象属性  ---->   构造函数的原型  ---->  object原型
+
+## 9. 防抖和节流
+
+防抖：一定之间被只触发最后一次
+
+```js
+let oInput = document.querySelector('input')
+oInput.addEventListener('input', function() {
+    antiShake(() => {
+        console.log(123)
+    }, 1000)
+})
+function antiShake(fn, delay) {
+    if(window && window.timer) clearTimeout(timer)
+    window.timer = setTimeout(fn, delay)
+}
+```
+
+
+
+节流：一定时间内只触发一次
+
+```js
+let oInput = document.querySelector('input')
+oInput.addEventListener('input', function() {
+    throttle(() => {
+        console.log(123)
+    }, 1000)
+})
+// 延时器
+function throttle(fn, delay) {
+    if(!window.timer) window.timer = setTimeout(() => {
+        fn()
+        timer = null
+    }, delay)
+}
+
+// 时间戳
+function throttle(fn, delay = 2000) {
+    let pre = 0
+    let current, diff
+    return () => {
+        current = Date.now()
+        diff = current - pre
+        if(diff > delay) {
+            fn()
+            pre = current
+        }
+    }
+}
+```
+
+
+
+## 10. 闭包
+
+- 延长变量生命周期
+- 创建私有变量
+- 防抖和节流都用到了闭包
+
+
+
+## 11. 深拷贝
+
+```js
+function deepClone(source) {
+    const cloneObj = source.constructor === Object ? {} : []
+    for(let k in source) {
+        if(source.hasOwnProperty(k)) {
+            if(source[k] && typeof source[k] === 'object') {
+                cloneObj[k] = deepClone(source[k])
+            } else {
+                cloneObj[k] = source[k]
+            }
+        }
+    }
+    return cloneObj
+}
+```
+
+
+
+## 12. promise原理
+
+- 解决回调地狱
+- 解决异步的最好办法
+
+
+
+手写一个promise
+
+
+

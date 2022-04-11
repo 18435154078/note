@@ -75,7 +75,6 @@ Vue.component('children-component', {
             // 通过自定义事件来传值
             this.$emit('sendMsg', this.msg)
         }
-
     }
 })
 new Vue({
@@ -251,7 +250,7 @@ new Vue({
 
 ## 三、 插槽
 
-### 1. 普通插槽
+### 1. 默认插槽
 
 ```js
 Vue.component('Global', {
@@ -275,7 +274,7 @@ new Vue({
 })
 ```
 
-### 2. 命名插槽
+### 2. 具名插槽
 
 ```js
 Vue.component('Global', {
@@ -305,6 +304,54 @@ new Vue({
     `,
 })
 ```
+
+### 3. 作用域插槽
+
+#### 3.1 默认插槽
+
+```html
+<!-- 插槽 -->
+<slot :msg="msg"></slot>
+
+<!-- 引用 -->
+<template scope="data">
+    {{ data.msg }}
+</template>
+```
+
+#### 3.2 具名插槽
+
+```html
+<!-- 插槽 -->
+<slot name="hello" :msg="msg"></slot>
+
+<!-- 引用 -->
+<template #hello="data">
+    {{ data.msg }}
+</template>
+```
+
+
+
+应用插槽的方式
+
+- ```html
+  <h1 slot="slot1">插槽1</h1>
+  ```
+
+- ```html
+  <template v-slot:slot2>
+  	<h1>插槽2</h1>
+  </template>
+  ```
+
+- ```html
+  <template #slot3>
+  	<h1>插槽3</h1>
+  </template>
+  ```
+
+
 
 ## 四、 过滤器
 
@@ -565,6 +612,15 @@ new Vue({
 
 <img src="./img/生命周期.png" />
 
+路由组件的生命周期：
+
+- activated：路由激活
+- deactivated：路由失活
+
+
+
+
+
 ## 八、 `this.$nextTick`
 
 当DOM被修改时，不会及时更新，此时如果直接获取DOM，拿到的是修改之前的DOM。此时就需要用到`this.$nextTick`
@@ -708,7 +764,7 @@ new Vue({
 })
 ```
 
-
+**注意**：path和params不能同时使用（很奇怪）
 
 ### 4. 嵌套路由
 
@@ -819,7 +875,156 @@ new Vue({
 }).$mount('#app')
 ```
 
-### 5. 路由权限控制
+### 5. props
+
+根据数据类型分为三种形式
+
+- 对象类型
+
+  ```js
+  {
+      path: 'home',
+      component: Home,
+      props: {
+          a: 1,
+          b: 2
+      }
+  }
+  ```
+
+- 布尔值：默认为false，若为真，则会将路由参数中的params参数全部传给props
+
+  ```js
+  {
+      path: 'home',
+      component: Home,
+      props: true
+  }
+  ```
+
+- 函数
+
+  ```js
+  {
+      path: 'home',
+      component: Home,
+      props($route) {
+          return {
+              a: $route.query.a,
+          	b: $route.params.b
+          }
+      }
+  }
+  ```
+
+  
+
+### 6. 路由缓存
+
+```vue
+<templete>
+    <!-- 基本使用 -->
+	<keep-alive>
+        <route-view></route-view>
+    </keep-alive>
+    
+    <!-- 包含单个，News指的是组件名，即组件中的name属性 -->
+    <keep-alive include="News">
+        <route-view></route-view>
+    </keep-alive>
+    
+    <!-- 包含多个 -->
+    <keep-alive :include="['News', 'about']">
+        <route-view></route-view>
+    </keep-alive>
+</templete>
+```
+
+```html
+
+```
+
+### 7. 路由守卫
+
+#### 7.1 全局守卫
+
+##### 7.1.1 全局前置守卫
+
+```js
+beforeEach(to, from, next) {  }
+```
+
+##### 7.1.2 全局后置守卫
+
+```js
+afterEach(to, from, next) {  }
+```
+
+#### 7.2 独享路由守卫
+
+```js
+beforeEnter(to, from, next) {  }
+```
+
+#### 7.3 组件内路由守卫
+
+##### 组件进入之前
+
+```js
+beforeRouteEnter(to, from, next) {  }
+```
+
+##### 组件离开之前
+
+```js
+afterRouteEnter(to, from, next) {  }
+```
+
+### 8. mate
+
+mate对象可以储存
+
+- 登陆权限
+- title
+
+
+
+### 9. 路由模式
+
+
+
+#### 9.1 history
+
+线上部署，需要后端配合
+
+nodejs
+
+`connect-history-api-fallback`
+
+```shell
+npm i connect-history-api-fallback
+```
+
+```js
+const express = require('express')
+const app = express()
+const history = require('connect-history-api-fallback')
+// 必须在开放静态资源之前使用
+app.use(history())
+app.use(express.static(__dirname + '/public'))
+```
+
+
+
+
+
+#### 9.2 hash
+
+兼容性好，`/#/`后面的内容作为前端资源，不会发送给服务器
+
+
+
+### 10. 路由权限控制
 
 
 
@@ -1153,11 +1358,231 @@ actions: {
 
 ### 5. Modules
 
+store/index.js
+
+```js
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+
+const user = {
+    namespaced: true,
+    state: {
+        count: 0
+    },
+    getters: {
+        show(state) {
+            return '￥' + state.count
+        }
+    },
+    mutations: {
+        UPDATE_COUNT(state, payload) {
+            state.count = payload
+        }
+    },
+    actions: {
+        
+    }
+}
+
+export default new Vuex.Store({
+	modules: {
+        user
+    }
+})
+```
+
+使用
+
+```vue
+<template>
+	<div>
+        
+    </div>
+</template>
+<script>
+    import { mapStates, mapGetters, mapMutations, mapActions } from 'vuex'
+	export default = {
+        name: '',
+        methods: {
+            
+        },
+        components: {
+            // 命名空间为true的写法
+            ...mapStates('user', ['count']),
+            ...mapGetters('user', ['show']),
+            ...mapMutations('user', ['UPDATE_COUNT']),
+            ...mapActions('user', [''])
+            // 命名空间为false的写法
+            // this.$store.state.user['count']
+            // this.$store.getters['user/show']
+            // this.$store.commit['user/UPDATE_COUNT']
+            // this.$store.getters['user/count']
+        }
+    }
+</script>
+```
 
 
 
 
-## 自定义指令
+
+## vue混入
+
+复用vue实例配置
+
+- 局部混入
+
+  ```js
+  import { mixin } from './mixin.js'
+  export default = {
+      data() {
+          return {
+              name: 'jerry'
+          }
+      },
+      mixins: []
+  }
+  ```
+
+- 全局混入
+
+  ```js
+  Vue.mixin({
+      data() {
+          return {
+              hello: 'hello'
+          }
+      }
+  })
+  ```
+
+  
+
+`mixin.js`
+
+```js
+export const mixin = {
+    data() {
+        return {
+            age: 18
+        }
+    },
+    methods: {
+        SayHello() {
+            console.log('hello')
+        }
+    }
+}
+```
+
+`hello.vue`
+
+```vue
+<script>
+    import { mixin } from './mixin.js'
+	export default = {
+        data() {
+            return {
+                name: 'jerry'
+            }
+        },
+        mixins: [mixin]
+    }
+</script>
+```
+
+优先级：
+
+- data、methods以组件为主
+- 钩子函数全部执行
+
+
+
+## 插件
+
+
+
+
+
+## 过渡与动画
+
+
+
+<img src="https://cn.vuejs.org/images/transition.png" />
+
+```html
+<div class="app">
+    <button @click="change">click</button>
+    <transition name="my" appear>
+        <h1 v-show="isShow">我是h1元素</h1>
+    </transition>
+</div>
+```
+
+```js
+new Vue({
+    data: {
+        isShow: true
+    },
+    methods: {
+        change() {
+            this.isShow = !this.isShow
+        }
+    }
+}).$mount('.app')
+```
+
+```css
+/*帧动画*/
+.my-enter-active {
+    animation: atguigu 1s;
+}
+.my-leave-active {
+    animation: atguigu 1s reverse;
+}
+@keyframes atguigu {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translate(0);
+    }
+}
+/* 过渡动画 */
+/* 动画进入之前和动画离开之后的状态 */
+.v-enter, .v-leave-to {
+    transform: translateX(-100%);
+}
+/* 动画进入之后和动画离开之前的动画 */
+.v-enter-to, .v-leave {
+    transform: translateX(0%);
+}
+/* 动画的播放过程 */
+.v-enter-active, .v-leave-active {
+    transition: all 1s linear;
+}
+```
+
+transition
+
+- name：配置名称，默认为v
+- appear：初始化是展示动画
+- mode：动画模式
+  - 
+
+
+
+```css
+
+```
+
+v-move：移动时动画
+
+
+
+
 
 
 
@@ -1171,31 +1596,911 @@ actions: {
 
 
 
+## 查看npm插件/包版本
+
+```shell
+npm view webpack version
+```
 
 
 
 
-## vue3.0
 
-### vue3.0对于2.0有什么优点
 
-#### 1. 速度快
+
+## 11. vue3.0
+
+### 11. 1 vue3.0对于2.0有什么优点
+
+#### 11.1.1. 速度快
 
 `diff`算法，静态编译，速度提高1.5-2倍
 
-#### 2. 体积小
+#### 11.1.2. 体积小
 
 内置tree-shaking的webpack插件
 
-#### 3. 维护方便
+#### 11.1.3. 维护方便
 
 新增composition API
 
-#### 4. 原生
+#### 11.1.4. 原生
 
 vue2.0：通过`Object.defineProrerty`拦截各个属性，需要深层的遍历多个对象，
 
 vue3.0：通过Proxy直接代理对象，直接监听对象，因此当对象添加属性时，视图也会直接更新，不再需要通过`this.$set`去添加属性来更新视图
+
+### 11.2. 创建vue3项目
+
+两种方式
+
+`webpack`
+
+```shell
+vue ctreate my-vue
+```
+
+`vite`
+
+```shell
+npm init vite-app my-vue3
+cd ./my-vue3
+npm i
+npm run dev
+```
+
+### 11.3 对比
+
+#### 11.3.1 main.js
+
+vue2.0
+
+```js
+import Vue from 'vue'
+import App from './App.vue'
+import router from './router'
+import store from './store'
+new Vue({
+    render: h => h(App)
+}).$mount('#app')
+```
+
+
+
+vue3.0
+
+```js
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+import store from './store'
+const app = createApp(App)
+
+app.use(store).use(router).mount('#app')
+```
+
+#### 11.3.2 组合`api`（`setup`）
+
+组件中用到的数据，方法，生命周期等都需要放到setup中
+
+可以传两个参数
+
+- 父组件传的props
+
+- 上下文对象
+
+  - `attrs`：值为对象，包含外部传递过来的，没有在 `props` 申明接收的属性，相当于 `2.0` 中的 `$attrs`
+  - `slots`：收到的插槽内容，相当于 `2.0` 中的 `$slots`
+
+  - `emit`：分发自定义事件函数，相当于 `2.0` 中的 `this.$emit`，需要用 `emits` 接收一下，否自会有警告，不影响代码代码编译
+
+
+
+##### 11.3.2.1 数据响应式
+
+```vue
+<template>
+  <nav>
+    <button @click="handleclick">点击</button>
+    {{ a }}
+    <br/>
+    {{ obj.name }} -- {{ obj.age }}
+  </nav>
+</template>
+
+<script>
+import { ref } from 'vue'
+export default {
+  setup() {
+    let a = ref(1)
+    let obj = ref({
+      name: 'xiao',
+      age: 12
+    })
+    function handleclick() {
+      a.value = 2
+      obj.value.age = 10
+      console.log(a)
+    }
+    return {
+      a,
+      handleclick,
+      obj
+    }
+  }
+}
+</script>
+```
+
+
+
+ref：基本数据类型用，也可以用做对象
+
+```vue
+<template>
+    <button @click="handleclick">点击</button>
+    {{ a }}
+    <br/>
+    {{ obj.name }} -- {{ obj.age }}
+</template>
+
+<script>
+import { ref } from 'vue'
+export default {
+  setup() {
+    let a = ref(1)
+    let obj = ref({
+      name: 'xiao',
+      age: 12
+    })
+    function handleclick() {
+      a.value = 2
+      obj.value.age = 10
+    }
+    return {
+      a,
+      handleclick,
+      obj
+    }
+  }
+}
+</script>
+```
+
+
+
+reactive：对象类型用
+
+```vue
+<template>
+    <button @click="handleclick">点击</button>
+    {{ otherObj.name }} -- {{ otherObj.age }}
+</template>
+
+<script>
+import { reactive } from 'vue'
+export default {
+  setup() {
+    // 响应式对象
+    let otherObj = reactive({
+      name: 'wang',
+      age: 30
+    })
+    // 响应式数组，可以通过下表直接修改数组（vue2.0不支持）
+    let arr = ref([
+      '抽烟',
+      '喝酒',
+      '烫头'
+    ])
+    function handleclick() {
+      otherObj.name = 'hello'
+      // 通过下标修改
+      arr.value[1] = 'world'
+      // 通过数组方法直接修改数组
+      arr.pop()
+    }
+    return {
+      handleclick,
+      otherObj
+    }
+  }
+}
+</script>
+```
+
+##### 11.3.2.2 计算属性
+
+- 简写
+
+  ```js
+  let fullName = computed(() => firstName.value + lastName.value)
+  ```
+
+- 完整写法
+
+  ```js
+  let fullName = computed({
+      get() {
+          return firstName.value + lastName.value
+      },
+      set() {}
+  })
+  ```
+
+  
+
+```vue
+<template>
+  <div>
+    姓：<input type="text" v-model="firstName">
+    <br/>
+    名：<input type="text" v-model="lastName">
+    <br/>
+    姓名：{{ fullName }}
+  </div>
+</template>
+
+<script>
+import { ref, computed } from 'vue'
+export default {
+  name: 'DemoCom',
+  setup(peops, context) {
+    let firstName = ref('zhang')
+    let lastName = ref('san')
+    // let fullName = computed(() => firstName.value + lastName.value)
+    let fullName = computed({
+      get() {
+        return firstName.value + lastName.value
+      },
+      set() {}
+    })
+    return {
+      firstName,
+      lastName,
+      fullName
+    }
+  }
+}
+</script>
+```
+
+##### 11.3.2.3 watch 监视
+
+watch有三个参数：
+
+- 监听的数据，可以一个或多个，多个用数组
+- 回调函数，有两个参数，`newVal`，`oldVal`
+- 配置参数，包括`immediate`，`deep`等
+
+
+
+watch监听情况分类
+
+- 监视ref的单个数据
+
+  ```js
+  watch(firstName, (newVal, oldVal) => {
+      console.log('firstName变化了', newVal, oldVal)
+  })
+  ```
+
+- 监视ref的多个数据
+
+  ```js
+  watch([firstName, lastName], (newVal, oldVal) => {
+      console.log('firstName或lastName变化了', newVal, oldVal)
+  })
+  ```
+
+- 监视reactive对象
+
+  ```js
+  watch(person, (newVal, oldVal) => {
+      console.log('firstName或lastName变化了', newVal, oldVal)
+      // 监视对象，newVal和oldVal一样，暂时无法解决
+  })
+  ```
+
+
+注意：
+
+- reactive定义的变量无法回去 `oldValue`
+- reactive定义的变量强制开启深度监视，目前无法关闭
+- reactive定义的变量，如果监视变量的一个属性，这个属性的属性值是一个对象，深度监视可以起作用
+- ref定义的变量，基本数据类型不用`.value`，对象用`.value`，或者开启深度监视
+
+
+
+`watchEffect`
+
+
+
+##### 11.3.2.4 生命周期
+
+vue3.0生命周期
+
+- `beforeCreate`：
+- `created`：
+- `beforeMount`：
+- `mounted`：
+- `beforeUpdate`：
+- `updated`：
+- `beforeUnmount`：
+- `unmounted`：
+
+钩子函数塞进setup中替换的名字
+
+- `beforeCreate` --- 无
+- `created` --- 无
+- `beforeMount` ---`onBeforeMount`
+- `mounted`：--- `onMounted`
+- `beforeUpdate`：--- `onBeforeMount`
+- `updated`：--- `onUpdated`
+- `beforeUnmount`：--- `onBeforeUnmount`
+- `unmounted`：--- `onUnmounted`
+
+```vue
+<template>
+  <div>
+   
+  </div>
+</template>
+
+<script>
+import { onBeforeMount, onMounted } from 'vue'
+export default {
+  setup(peops, context) {
+    onBeforeMount(() => {
+      console.log('---onBeforeMount--')
+    })
+    onMounted(() => {
+      console.log('---onMounted--')
+    })
+  }
+}
+</script>
+```
+
+注意：组合 `api` 钩子函数要比配置项钩子函数触发时机早
+
+
+
+##### 11.3.2.5 hook
+
+作用：将一个功能的左右代码组合到一起
+
+```vue
+<template>
+  <div>
+    坐标是 {{ point.x }}, {{ point.y }}
+  </div>
+</template>
+
+<script>
+import userPoint from '../hooks/userPoint'
+export default {
+  setup() {
+    let point = userPoint()
+    return { point }
+  }
+}
+</script>
+```
+
+`hooks/userPoint.js`
+
+```js
+import { reactive, onMounted, onUnmounted } from 'vue'
+export default function() {
+  let point = reactive({
+    x: 0,
+    y: 0
+  })
+  function clickGetPoint(e) {
+    point.x = e.pageX
+    point.y = e.pageY
+  }
+  onMounted(() => {
+    window.addEventListener('click', clickGetPoint)
+  })
+  onUnmounted(() => {
+    window.removeEventListener('click', clickGetPoint)
+  })
+  return point
+}
+```
+
+##### 11.3.2.6 toRef
+
+可以将丢失了响应式的值再次添加响应式，修改时可以影响整个对象
+
+```vue
+<template>
+  <div>
+    {{name}} ---- {{ age }}
+    <br/>
+    {{ person }}
+    <br/>
+    <button @click="name += '~'">修改name</button>
+    <button @click="age += 1">修改age</button>
+  </div>
+</template>
+
+<script>
+import { reactive, toRef } from 'vue'
+export default {
+  setup() {
+    let person = reactive({
+      name: '张三',
+      age: 20
+    })
+    let name = toRef(person, 'name')
+    let age = toRef(person, 'age')
+    return {
+      person,
+      name,
+      age
+    }
+  }
+}
+</script>
+```
+
+`toRefs`
+
+```vue
+<template>
+  <div>
+    {{name}} ---- {{ age }}
+    <br/>
+    {{ person }}
+    <br/>
+    <button @click="name += '~'">修改name</button>
+    <button @click="age += 1">修改age</button>
+  </div>
+</template>
+
+<script>
+import { reactive, toRefs } from 'vue'
+export default {
+  setup() {
+    let person = reactive({
+      name: '张三',
+      age: 20
+    })
+    return {
+      // point,
+      person,
+      ...toRefs(person)
+    }
+  }
+}
+</script>
+
+```
+
+##### 11.3.2.7 `shallowRef`  和  `shallowReactive`
+
+`shallowRef`：只处理基本数据类型，对象类型无响应式
+
+`shallowReactive`：只处理对象的第一层（浅层响应式）
+
+##### 11.3.2.8 `readonly`  和  `shallowReadonly`
+
+```vue
+<template>
+  <div>
+    {{name}} ---- {{ age }}
+    <br/>
+    {{ person }}
+    <br/>
+    <button @click="name += '~'">修改name</button>
+    <button @click="age += 1">修改age</button>
+  </div>
+</template>
+
+<script>
+import { reactive, toRefs, readonly } from 'vue'
+// import userPoint from '../hooks/userPoint'
+export default {
+  setup() {
+    let person = reactive({
+      name: '张三',
+      age: 20
+    })
+    person = readonly(person)
+    return {
+      person
+    }
+  }
+}
+</script>
+```
+
+- `readonly`：只读
+- `shallowReadonly`：对象的第一层数据只读
+
+适用场景：接收props参数，转为只读
+
+##### 11.3.2.9 `toRaw`  和  `markRow`
+
+toRaw：将reactive生成的响应式对象转为普通对象
+
+markRow：标记一个对象，使其永远不会成为响应式对象
+
+再看下
+
+##### 11.3.2.10 自定义ref（customRef）
+
+```vue
+<template>
+  <div>
+    <input type="text" v-model="keyWord">
+    <br/>
+    {{ keyWord }}
+  </div>
+</template>
+
+<script>
+import { customRef } from 'vue'
+export default {
+  setup() {
+    function myRef(value) {
+      let timer
+      return customRef((track, trigger) => {
+        return {
+          get() {
+            track()
+            return value
+          },
+          set(newVal) {
+            clearTimeout(timer)
+            value = newVal
+            timer = setTimeout(() => {
+              trigger()
+            }, 1000)
+          }
+        }
+      })
+    }
+    let keyWord = myRef('hello')
+    return {
+      keyWord
+    }
+  }
+}
+</script>
+```
+
+- customRef
+  - `track`：`getter` 函数 `return` 之前调用
+  - `trigger`：数据改变时调用，通知模板更新
+
+##### 11.3.2.11 `provide` 和 `inject`
+
+祖先组件
+
+```vue
+<template>
+  <router-view/>
+</template>
+
+<script>
+import { reactive, provide } from 'vue'
+export default {
+  setup() {
+    let otherObj = reactive({
+      name: 'wang',
+      age: 30
+    })
+    provide('otherObj', otherObj)
+    return {
+      otherObj
+    }
+  },
+  components: {
+    Demo
+  }
+}
+</script>
+```
+
+后代组件
+
+```vue
+<template>
+  <div>
+    {{ person }}
+  </div>
+</template>
+
+<script>
+import { inject } from 'vue'
+export default {
+  setup() {
+    let person = inject('otherObj')
+    return {
+      person
+    }
+  }
+}
+</script>
+```
+
+##### 11.3.2.12 动态组件（suspense）和异步引入（defineAsyncComponent）
+
+```vue
+<template>
+  <div>
+    <suspense>
+      <!-- 展示组件 -->
+      <template #default>
+        <Provide />
+      </template>
+	  <!-- 组件没加载出来时展示，可以是loading，骨架屏等 -->
+      <template #fallback>
+        loading
+      </template>
+    </suspense>
+  </div>
+</template>
+
+<script>
+import { defineAsyncComponent } from 'vue'
+// import Provide from '../components/provide.vue'
+const Provide = defineAsyncComponent(() => import('../components/provide.vue'))
+export default {
+  name: 'DemoCom',
+  setup() {
+    return {}
+  },
+  components: {
+    Provide
+  }
+}
+</script>
+```
+
+
+
+控制子组件延迟展示
+
+```vue
+<template>
+  <div>
+    provide
+    {{ person }}
+    <br/>
+    2秒后展示
+  </div>
+</template>
+
+<script>
+import { inject, onMounted, ref } from 'vue'
+export default {
+  async setup() {
+    let person = inject('otherObj')
+    let isShow = ref(true)
+    const pro = new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          person,
+          isShow
+        })
+      }, 2000)
+    })
+    return await pro
+  }
+}
+</script>
+```
+
+##### 11.3.2.13 teleport组件
+
+自定义组件挂载位置
+
+```vue
+<template>
+  <div>
+    <teleport to='body'>
+      <div class="cover" v-show="isShow">
+        <div class="alert">alert</div>
+      </div>
+    </teleport>
+  </div>
+</template>
+
+<script>
+import { ref, onMounted } from 'vue'
+export default {
+  setup() {
+    let isShow = ref(true)
+    
+    onMounted(() => {
+        // 两秒后遮罩层消失
+        setTimeout(() => {
+            isShow.value = false
+            console.log('hello world ')
+        }, 2000)
+    })
+    
+    return { isShow }
+  }
+}
+</script>
+<style lang="css">
+  .cover {
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+  .alert {
+    width: 200px;
+    height: 200px;
+    background: #fff;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    margin: auto;
+    text-align: center;
+    line-height: 200px;
+  }
+</style>
+```
+
+teleport组件有一个to属性，可以接受css选择器，挂载到指定选择器的节点中
+
+
+
+
+
+##### 11.3.2.13 其他改变
+
+- vue中的全局属性
+
+  | 2.x 全局API (Vue)        | 3.x 全局API (app)           |
+  | ------------------------ | --------------------------- |
+  | Vue.config.xxxx          | app.config.xxxx             |
+  | Vue.config.productionTip | **移除**                    |
+  | vue.component            | app.component               |
+  | vue.directive            | app.directive               |
+  | vue.mixin                | app.mixin                   |
+  | vue.use                  | app.use                     |
+  | Vue.prototype            | app.config.globalProperties |
+
+  给app实例添加一个属性：
+
+  ```js
+  app.config.globalProperties.myPro = 'hello world!!!'
+  ```
+
+  获取原型上的属性：
+
+  ```js
+  import { getCurrentInstance } from 'vue'
+  export default {
+    name: 'MyCustomPlugin',
+    setup() {
+      const internalInstance = getCurrentInstance()
+      let my = internalInstance.appContext.config.globalProperties.myPro
+      console.log(my)
+      return { my }
+    }
+  }
+  ```
+
+  
+
+- data配置项始终被声明为一个函数
+
+- 过渡
+
+  vue2.x
+
+  ```css
+  .v-enter,
+  v-leave-to {
+      opacity: 0
+  }
+  .v-leave,
+  v-enter-to {
+      opacity: 1
+  }
+  ```
+
+  vue3.x
+
+  ```css
+  .v-enter-from,
+  v-leave-to {
+      opacity: 0
+  }
+  .v-leave-from,
+  v-enter-to {
+      opacity: 1
+  }
+  ```
+
+- 移除 `keyCode` 作为事件修饰符
+
+- 移除 `.native` 作为修饰符
+
+- 移除过滤器
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 11.4 Proxy响应式原理
+
+`Object.defineProperty`
+
+```js
+let person = {
+    name: '张三',
+    age: 12
+}
+let p = {}
+for(let k in person) {
+    Object.defineProperty(p, k, {
+        value: person[k],
+        set(val) {
+            console.log('有人改数据')
+            person[k] = val
+        }
+    })
+}
+```
+
+
+
+
+
+`Proxy`
+
+```js
+let person = {
+    name: '张三',
+    age: 12
+}
+let p1 = new Proxy(person, {
+    // 查
+    get(target, propName) {
+        console.log(`有人读取${propName}的属性`)
+        // return target[propName]
+        return Reflect.get(target, propName)
+    },
+    // 增，改
+    set(target, propName, newVal) {
+        console.log(`有人修改${propName}上的属性，属性值为${newVal}`)
+        // target[propName] = newVal
+        Reflect.set(target, propName, newVal)
+    },
+    // 删
+    deleteProperty(target, propName) {
+        // return delete target[propName]
+        return Reflect.deleteProperty(target, propName)
+    }
+})
+```
+
+- Reflect：反射，有多个对象的属性和方法，用Reflect操作有返回值，成功为 `true`，失败为 `false` ，不会使程序报错奔溃
+
+- Proxy：可以检测到对象的增删改查操作
+
+
 
 
 
@@ -1243,7 +2548,7 @@ directives: {
   - 页面加载时调用
   - 所在组件数据变化时调用
 
-### （2）钩子函数形式
+#### （2）钩子函数形式
 
 ```js
 directives: {

@@ -481,7 +481,7 @@ npm i style-loader css-loader -D
 module.exports = {
     modules: {
         rules: [
-           {
+           	{
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader'],
             },
