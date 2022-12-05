@@ -155,7 +155,7 @@ exports默认是一个空对象，用来储存导出的变量或函数
 
 #### 3.2 module.exports和exports的区别
 
-在node中，每个模块内部都有一个自己的module对象，改module对象中有一个成员叫exports，默认是空对象，需要导出模块是 `module.exports = xxxxx` ,由于点操作写起来麻烦，所以node内置了exports变量，使`exports = module.exports`。
+在node中，每个模块内部都有一个自己的module对象，该module对象中有一个成员叫exports，默认是空对象，需要导出模块是 `module.exports = xxxxx` ,由于点操作写起来麻烦，所以node内置了exports变量，使`exports = module.exports`。
 
 - require引入的其实是module.exports对象
 - 如果指针不变，则exports和module.exports是一样的
@@ -1494,7 +1494,8 @@ const userSchema = new Schema({
         require: true //不能为空
     },
     email: {
-        type: String
+        type: String，
+        
     }
 })
 // 3. 将文档结构发布为模型
