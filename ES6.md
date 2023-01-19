@@ -980,7 +980,7 @@ dog.sayName()
 
 - 获取到该模块输出的所有对象的方法
 
-```javascript
+```html
 <script type="module">
   import * as module from './modules/index.js'
   console.log(module) // 所有值都可以获取到，包括default

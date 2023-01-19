@@ -821,3 +821,39 @@ export default createStore({
 
 
 ### 5.2 Pinia
+
+优点：
+
+- 支持选项式api和组合式api
+- 没有mutations和modules
+  - 不需要分模块
+  - 只有state，getters，actions
+- typescript支持更好
+- 轻量级，体积小，性能好
+- 自动化拆分代码
+- 可以直接修改state数据
+
+#### 5.2.1 安装
+
+```shell
+npm i pinia
+yarn add pinia
+```
+
+#### 5.2.2 使用
+
+main.js
+
+```js
+import { createApp } from 'vue'
+import Router from './router'
+import App from './App.vue'
+import { createPinia } from 'pinia'
+
+const store = createPinia()
+
+createApp(App).use(Router).use(store).mount('#app')
+```
+
+
+
