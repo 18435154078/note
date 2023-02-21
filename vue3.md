@@ -857,3 +857,272 @@ createApp(App).use(Router).use(store).mount('#app')
 
 
 
+index.js
+
+```js
+import { defineStore } from 'pinia'
+
+export const useStore =  defineStore('storeId', {
+  state: () => {
+    return {
+      num: 1
+    }
+  },
+  getters: {
+  	changeNum: state => {
+        return 'this.num' + state.num
+      }
+  	},
+    
+    // 两种方式均可，箭头函数中没没this
+    // changeNum(){
+    //    return 'this.num' + this.num
+    //  }
+  	},
+  },
+  actions: {
+    changeNum(val) {
+      this.num += val
+    }
+  }
+})
+
+export const useStore1 = defineStore('storeId1', {
+  state: () => {
+    return {
+      name: '张三'
+    }
+  },
+  getters: {},
+  actions: {}
+})
+```
+
+
+
+pinia.vue
+
+```vue
+<template>
+  <div>
+    {{ name }}
+    <button @click="handleClick">click</button>
+  </div>
+</template>
+
+<script setup>
+import { storeToRefs } from 'pinia';
+import { useStore, useStore1} from '../store'
+const store = useStore()
+const store1 = useStore1()
+const { name } = storeToRefs(store1)
+function handleClick() {
+  // 直接修改解构出来的值
+  name.value = '李四'
+
+  // 直接修改
+  store1.name = '李四'
+
+  // 批量修改
+  store1.$patch(state => {
+    state.name = '李四'
+  })
+    
+  // 调用action传参
+  store.changeNum(1)
+}
+
+</script>
+```
+
+注意：解构出来的变量没有响应式，需要用 `storeToRefs` 包裹
+
+#### 5.2.3 持久化存储
+
+安装
+
+```shell
+yarn add pinia-plugin-persist
+```
+
+使用
+
+```js
+import { defineStore, createPinia } from 'pinia'
+import piniaPluginPersist from 'pinia-plugin-persist'
+const store = createPinia()
+store.use(piniaPluginPersist)
+
+export const useStore =  defineStore('storeId', {
+  state: () => {
+    return {
+      num: 1,
+      age: 10
+    }
+  },
+  persist: {
+    enabled: true,
+    strategies: [{
+      key: '',   // key值
+      storage: '',  // 默认会话存储
+      paths: ['num']  // 哪些属性需要缓存
+    }]
+  }
+})
+export default store
+```
+
+
+
+## 环境变量
+
+### webpack
+
+开发环境：`.env.development`
+
+```shell
+NODE_ENV = 'development'
+VUE_APP_API_URL = '/api'
+```
+
+开发环境：`.env.production`
+
+```shell
+NODE_ENV = 'production'
+VUE_APP_API_URL = 'http://localhost:5000'
+```
+
+获取方式：`process.env.VUE_APP_API_URL`
+
+
+
+### vite
+
+开发环境：`.env.development`
+
+```shell
+NODE_ENV = 'development'
+VITE_API_URL = '/api'
+```
+
+开发环境：`.env.production`
+
+```shell
+NODE_ENV = 'development'
+VITE_API_URL = 'localhost:5000'
+```
+
+获取方式：`import.meta.env.VUE_APP_API_URL`
+
+
+
+总结不同点
+
+- `webpack` 以 `VUE_APP` 开头，`vite` 以 `VITE` 开头
+
+- `webpack` 通过 `process.env` 获取，`vite` 以 `import.mete.env`获取
+
+
+
+## 打包配置
+
+### 1. `vue.comfig.js` 配置
+
+`.env.development`
+
+```shell
+NODE_ENV = 'development'
+VITE_MODE = 'dev'
+VITE_API_URL = '/api'
+```
+
+`.env.production`
+
+```shell
+NODE_ENV = 'production'
+VITE_NODE = 'pro'
+VITE_API_URL = 'http://localhost:5000'
+VITE_OUTPUT_DIR = dist
+VITE_BASE_URL = '/dist'
+```
+
+`.env.test`
+
+```shell
+NODE_ENV = 'test'
+VITE_NODE = 'test'
+VITE_API_URL = 'http://localhost:5000'
+VITE_OUTPUT_DIR = test
+VITE_BASE_URL = '/test/'
+```
+
+`package.json`
+
+```json
+{
+  "name": "my-vite",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vite build --mode test",
+    "preview": "vite preview"
+  }
+}
+
+```
+
+`vite.config.js`
+
+```js
+import { defineConfig, loadEnv } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import autoImport from 'unplugin-auto-import/vite'
+
+// https://vitejs.dev/config/
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd())  // 获取环境变量对象
+  return {
+    plugins: [
+      vue(),
+      autoImport({
+        imports: ['vue', 'vue-router']
+      })
+    ],
+    server: { // 代理
+      proxy: {
+        '/api': {
+          target: 'http://localhost:5000',
+          changeOrigin: true,
+          rewrite: path => path.replace(/^\/api/, '')
+        }
+      }
+    },
+    base: env.VITE_BASE_URL,  // 基础路径
+    build: {
+      outDir: env.VITE_OUTPUT_DIR + env.VITE_BASE_URL // 打包文件的输出目录
+    }
+  }
+})
+
+```
+
+### 2. `package.json` 配置
+
+```json
+{
+  "name": "my-vite",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --outDir=dist --base=/dist/",   // --outDir 打包目录   --base 基础路径
+    "test": "vite build --mode test --outDir=test --base=/test/",
+    "preview": "vite preview"
+  }
+}
+```
+
