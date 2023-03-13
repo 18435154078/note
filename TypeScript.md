@@ -89,6 +89,26 @@ function info(a: any): any {
 }
 console.log(info({ name: 'hwllo' }))
 
+
+// 变量或常量的函数
+const fn1: (a: number, b: number) => number = function(a, b) {
+    return a + b
+}
+const fn1 = function(a: number, b: number): number {
+    return a + b
+}
+fn1(1,2)
+
+
+// 变量或常量的函数   箭头函数
+const fn2: (a: number, b: number) => number = (a, b) => {
+    return a + b
+}
+const fn2 = (a: number, b: number): number => {
+    return a + b
+}
+fn1(1,2)
+
 ```
 
 #### 2.1.5 对象中的类型

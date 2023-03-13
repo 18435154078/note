@@ -21,6 +21,8 @@ function sum(a: number, b: number): string {
 console.log(sum(123, 456))
 ```
 
+
+
 ## 2. ts中的类型
 
 定义多种类型：
@@ -173,6 +175,12 @@ let double: number | string = '1'
 ## 3. 编译选项
 
 配置文件
+
+```shell
+tsc -init
+```
+
+
 
 ```json
 {

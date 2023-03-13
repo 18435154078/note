@@ -1026,7 +1026,7 @@ VITE_API_URL = 'localhost:5000'
 
 ## 打包配置
 
-### 1. `vue.comfig.js` 配置
+### 1. `vite.comfig.js` 配置
 
 `.env.development`
 
@@ -1080,6 +1080,7 @@ VITE_BASE_URL = '/test/'
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import autoImport from 'unplugin-auto-import/vite'
+import { resolve } from 'node:path'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -1103,7 +1104,14 @@ export default defineConfig(({ mode }) => {
     base: env.VITE_BASE_URL,  // 基础路径
     build: {
       outDir: env.VITE_OUTPUT_DIR + env.VITE_BASE_URL // 打包文件的输出目录
-    }
+    },
+      
+     resolve: {
+      // 配置路径别名
+      alias: {
+        '@': resolve(__dirname, './src'),
+      },
+    },
   }
 })
 
