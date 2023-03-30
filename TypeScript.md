@@ -431,7 +431,7 @@ class Person<T, K> {
     public age: K
     constructor(name: T, age: K) {
         this.name = name
-        this.age = age
+        this.age = age 
     }
 }
 ```
@@ -442,6 +442,132 @@ class Person<T, K> {
 let p = new Person<string, number>('张三', 12)
 console.log(p)
 ```
+
+
+
+##### 2.2.2.6 装饰器
+
+一个方法，可以注入到**类，方法，属性，参数**上，来扩展**类，属性，方法，参数**的功能
+
+
+
+类装饰器
+
+```ts
+function decorator(target: any){  // target就是这个类 Person
+    target.prototype.getUser = function() {
+        console.log(1)
+    }
+}
+@decorator
+class Person {
+
+}
+let per = new Person()
+console.log(per)
+```
+
+
+
+装饰器工厂（可传参）
+
+```js
+function decorator(options: any) {
+    return function(target: any) {
+        target.prototype.name = options.name
+        target.prototype.age = options.age
+        target.hobby = [1,2]
+    }
+}
+@decorator({
+    name: '张三',
+    age: 12
+})
+class Person {
+    readonly eat = 1
+}
+let per = new Person()
+console.log(per)
+```
+
+
+
+装饰器组合
+
+```ts
+function decorator1(target: any){
+    3
+    target.prototype.sum = function(a:number,b: number):number{return a+ b}
+}
+
+function decorator2(options: any) {
+    1
+    return function(target: any) {
+        2
+        target.prototype.name = options.name
+        target.prototype.age = options.age
+        target.hobby = [1,2]
+    }
+}
+
+@decorator2({
+    name: '张三',
+    age: 12
+})
+@decorator1
+
+class Person {
+    readonly eat = 1
+}
+let per = new Person()
+console.log(per)
+```
+
+几个装饰器函数执行顺序：先自上而下执行装饰器工厂，再自下而上执行所有的装饰器
+
+
+
+属性装饰器
+
+```ts
+function decorator5(val: any) {
+    return function(target: any, key: any) {
+        target[key] = val
+    }
+}
+
+class Person {
+    @decorator5(5)
+    //@ts-ignore
+    eat: string;
+}
+let per = new Person()
+console.log(per)
+```
+
+
+
+方法装饰器
+
+```ts
+function decorator5(target: any, key: any) {
+    console.log(target, key)
+}
+class Person {
+    @decorator5
+    add() {
+        console.log('add')
+    }
+}
+let per = new Person()
+per.add()
+```
+
+
+
+
+
+
 
 #### 2.2.3 类的继承
 
@@ -549,6 +675,34 @@ console.log(p.age)
 ```
 
 
+
+## 命名空间
+
+```ts
+export namespace num {
+  export function add(a: number, b: number): number {
+    return a + b
+  }
+  console.log(add(1,2))
+}
+
+namespace str {
+  export function add(a: string, b: string): string {
+    return a + b
+  }
+  
+}
+console.log(str.add('1','2'))
+
+```
+
+
+
+```ts
+import {num} from './utils/global'
+console.log(num)
+
+```
 
 
 
@@ -668,7 +822,7 @@ module.exports = {
             title: 'hello world'
         })
     ],
-    // 可以作为模块的文件
+    // ts和js结尾的文件可省略扩展名
     resolve: {
         extensions: ['.ts', '.js']
     },
@@ -710,3 +864,16 @@ package.json
 
 
 
+
+
+
+
+## js数字进制问题
+
+各种进制表现形式
+
+- 二进制：0b1010
+- 八进制：0o12
+
+- 十进制：10
+- 十六进制：0xa
