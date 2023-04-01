@@ -1205,16 +1205,16 @@ cnpm i react-router-dom@5.1.2 -S
 
 ##### 6.1.2 常用组件及其功能
 
-`BrowserRouter`：浏览器路由器，整个应用都需要用一个路由器去管理，因此一般包裹在根组件外层的路由器
+**BrowserRouter**：浏览器路由器，整个应用都需要用一个路由器去管理，因此一般包裹在根组件外层的路由器
 
-`HashRouter`：哈希路由器，整个应用都需要用一个路由器去管理，因此一般包裹在根组件外层的路由器
+**HashRouter**：哈希路由器，整个应用都需要用一个路由器去管理，因此一般包裹在根组件外层的路由器
 
-`Link`：路由链接
+**Link**：路由链接
 
 - `to`：去哪个路由
 - `children`：标签体内容
 
-`NavLink`：路由链接，被激活的路由链接会加上一个`class="active"`，这个active可以用过属性修改
+**NavLink**：路由链接，被激活的路由链接会加上一个`class="active"`，这个active可以用过属性修改
 
 - `to`：去哪个路由
 
@@ -1243,24 +1243,222 @@ cnpm i react-router-dom@5.1.2 -S
   <MyNavLink to="about">about</MyNavLink>
   ```
 
-`Switch`：包裹`Route`组件，匹配到一个就不往下找了
+**Switch**：包裹`Route`组件，匹配到一个就不往下找了
 
-`Route`：渲染组件
+**Route**：渲染组件
 
 - `path`：匹配的路径名
 - `component`：路径匹配成功需要展示的组件
+
+**Redirect**：重定向
+
+- `to`： 去哪
 
 ##### 6.2.2 组件分类
 
 - 路由组件
   - 可以接受到内置的 `props` 值
+  
 - 一般组件
+
+  - 传什么接收什么
+
+  - 如果需要路由组件传的内置history对象，可以用 `withRouter `包裹一般组件
+
+    ```jsx
+    import React, { Component } from 'react'
+    import { withRouter } from 'react-router-dom'
+    
+    const detail = class Detail extends Component {
+      render() {
+        console.log(this.props)
+        return (
+          <div>Detail</div>
+        )
+      }
+    }
+    export default withRouter(detail)
+    ```
+
+#### 路由分类
+
+- 普通路由
+
+  ```jsx
+  export default class App extends Component {
+    render() {
+      return (
+        <div>
+          {/* 导航区 */}
+          <MyNavLink to="/home" children="home" />
+          <MyNavLink to="/about" children="about" />
+  
+          <br/><br/>
+  
+          {/* 路由注册区 */}
+          <Switch>
+            <Route path="/home" component={ Home } />
+            <Route path="/about" component={ About } />
+            <Redirect to="home" />
+          </Switch>
+        </div>
+      )
+    }
+  }
+  ```
+
+- 嵌套路由
+
+  app.jsx
+
+  ```jsx
+  export default class App extends Component {
+    render() {
+      return (
+        <div>
+          {/* 导航区 */}
+          <MyNavLink to="/home" children="home" />
+          <MyNavLink to="/about" children="about" />
+  
+          <br/><br/>
+  
+          {/* 路由注册区 */}
+          <Switch>
+            <Route path="/home" component={ Home } />
+            <Route path="/about" component={ About } />
+            <Redirect to="home" />
+          </Switch>
+        </div>
+      )
+    }
+  }
+  ```
+
+  home.jsx
+
+  ```jsx
+  export default class Header extends Component {
+    render() {
+      return <div>
+        React router demo
+        <MyNavLink to="/home" children="home1" />
+        <MyNavLink to="/home/home2" children="home2" />
+  
+        <br/><br/>
+        <Switch>
+          <Route path="/home" component={Home1}/>
+          <Route path="/home/home2" component={Home2}/>
+        </Switch>
+      </div>;
+    }
+  }
+  ```
+
+- 动态路由
+
+  ```jsx
+  export default class Header extends Component {
+    render() {
+      return <div>
+        React router demo
+        <MyNavLink to="/home/home1/2/张三" children="home1" />
+        <MyNavLink to="/home/home2" children="home2" />
+  
+        <br/><br/>
+        <Switch>
+          <Route path="/home/home1/:id/:name" component={Home1}/>
+          <Route path="/home/home2" component={Home2}/>
+          <Redirect to="/home/home1" />
+        </Switch>
+      </div>;
+    }
+  }
+  ```
+
+  ```jsx
+  export default class Home1 extends Component {
+    render() {
+      return (
+        <div>Home1</div>
+      )
+    }
+    componentDidMount() {
+      // this.props.match.params 接收
+      console.log(this.props)
+    }
+  }
+  
+  ```
+
+  
+
+#### 传参分类
+
+- params（动态路由）
+
+  ```jsx
+  export default class Header extends Component {
+    render() {
+      return <div>
+        <MyNavLink to="/home/home1/2/张三" children="home1" />
+            
+        <Switch>
+          <Route path="/home/home1/:id/:name" component={Home2} />
+        </Switch>
+      </div>;
+    }
+  }
+  ```
+
+  
+
+- search（query）
+
+  ```jsx
+  export default class Header extends Component {
+    render() {
+      return <div>
+        <MyNavLink to="/home/home1?id=1" children="home1" />
+        { // 或 }
+        <MyNavLink to={{ pathname: '/home/home1', search: '?id=1' }} children="home1" />
+  
+        <Switch>
+          <Route path="/home/home1" component={Home1}/>
+        </Switch>
+      </div>;
+    }
+  }
+  ```
+
+  接收需要自己转成对象------qs
+
+- state（不止state，其实key值可以是任意值)
+
+  ```jsx
+  export default class Header extends Component {
+    render() {
+      return <div>
+        <MyNavLink to={{ pathname: '/home/home1', state: {name: 1} }} children="home1" />
+  
+        <Switch>
+          <Route path="/home/home1" component={Home1}/>
+        </Switch>
+      </div>;
+    }
+  }
+  ```
+
+
 
 #### 6.2 6.x 版本
 
 
 
 
+
+### UI组件库
+
+antd
 
 
 
