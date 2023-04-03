@@ -1464,6 +1464,390 @@ antd
 
 
 
+## 状态管理（redux）
+
+### redux
+
+/redux
+
+redux/index.js
+
+```js
+import { combineReducers, legacy_createStore as createStore, applyMiddleware }  from 'redux'
+
+// 用于异步action
+import thunk from 'redux-thunk'
+
+// count组件的reducer
+import countReducer from './count/reducer'
+
+// person组件的reducer
+import personReducer from './person/reducer'
+
+// 合并reducer
+const reducers = combineReducers({
+  count: countReducer,
+  person: personReducer
+})
+
+export default createStore(reducers, applyMiddleware(thunk))
+```
+
+- `legacy_createStore`：创建store
+- `combineReducers`：合并resucer
+- `applyMiddleware | thunk`：异步action和中间件
+
+
+
+redux/count/action.js
+
+```js
+export const incuse = (val) => ({type: 'incuse', data: val})
+export const decuse = (val) => ({type: 'decuse', data: val})
+
+// 异步action,返回一个函数，这个时候需要中间件加工
+export const incurseAsync = (val) => {
+  return dispatch => {
+    setTimeout(() => {
+      dispatch(incuse(val))
+    }, 500)
+  }
+}
+```
+
+redux/count/reducer.js
+
+```js
+// 初始化
+const state = 0
+export default function countReducer(preState = state, action) {
+  const { data, type } = action
+  switch (type) {
+    case 'incuse':
+      return preState + data
+    case 'decuse':
+      return preState - data
+    default:
+      return preState
+  }
+}
+```
+
+
+
+redux/person/action.js
+
+```js
+export const addPerson = data => ({ type: 'addPerson', data })
+```
+
+redux/person/reducer.js
+
+```js
+// 初始化
+const state  = [{ id: '001', name: '张三', age: 12 }]
+export default function personReducer(preState = state, action) {
+  const { type, data } = action
+  switch (type) {
+    case 'addPerson':
+      return [data, ...preState]
+    default:
+      return preState;
+  }
+}
+```
+
+- action本质是个函数
+- reducer是个纯函数
+  - 纯函数：
+    - 同样的输入和同样的输出
+    - 不能改写参数数据
+    - 不能产生副作用，例如网络请求，输入输出设备
+    - 不能调用产生不固定结果的方法，例如Date.now()，Math.random()
+
+
+
+
+
+组件
+
+Count/index.jsx
+
+```jsx
+import React, { Component } from 'react'
+import store from '../../redux'
+import {incuse, decuse, incurseAsync} from '../../redux/count/action'
+
+export default class Count extends Component {
+  render() {
+    return (
+      <div>
+        <h2>我是Count</h2>
+        <div>{ store.getState().count }</div>
+        <div>
+          <select ref={ e => this.selectEl = e }>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+          <button onClick={ this.handleIncurse }>+</button>
+          <button onClick={ this.handleDecurse }>-</button>
+          <button onClick={ this.handleIncurseAsync }>异步加</button>
+        </div>
+        <div>下面的输出{ JSON.stringify(store.getState().person) }</div>
+      </div>
+    )
+  }
+  handleIncurse = () => {
+    const { value } = this.selectEl
+    // 分发action
+    store.dispatch(incuse(+value))
+  }
+  handleDecurse = () => {
+    const { value } = this.selectEl
+    // 分发action
+    store.dispatch(decuse(+value))
+  }
+  handleIncurseAsync = () => {
+    const { value } = this.selectEl
+    // 分发action
+    store.dispatch(incurseAsync(+value))
+  }
+}
+```
+
+
+
+Person/index.jsx
+
+```jsx
+import React, { Component } from 'react'
+import store from '../../redux'
+import { addPerson } from '../../redux/person/action'
+
+export default class Person extends Component {
+  render() {
+    return (
+      <div>
+        <h2>我是Person</h2>
+        <div>上面的输出{ store.getState().count }</div>
+        <div>
+          <input type="text" placeholder='姓名' ref={ e => this.addName = e } />
+          <input type="text" placeholder='年龄' ref={ e => this.addAge = e } />
+          <button onClick={ this.handleClick }>添加</button>
+          <ul>
+            { store.getState().person.map(item => <li key={item.id}>{item.name}---{item.age}</li>) }
+          </ul>
+        </div>
+      </div>
+    )
+  }
+  handleClick = () => {
+    const { value: name } = this.addName
+    const { value: age } = this.addAge
+    store.dispatch(addPerson({
+      id: window.crypto.randomUUID(),
+      name,
+      age
+    }))
+  }
+}
+```
+
+
+
+入口文件
+
+index.js
+
+```js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+import { BrowserRouter } from 'react-router-dom'
+import store from './redux'
+
+ReactDOM.render(
+  <React.StrictMode>
+    <BrowserRouter>
+     <App />
+    </BrowserRouter>
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+
+store.subscribe(() => {
+  ReactDOM.render(
+    <React.StrictMode>
+      <BrowserRouter>
+       <App />
+      </BrowserRouter>
+    </React.StrictMode>,
+    document.getElementById('root')
+  );
+})
+reportWebVitals();
+```
+
+- `store.subscribe`：监听redux变化，即使更新页面
+
+
+
+
+
+### react-redux + redux
+
+- redux 的文件内容都没变
+
+- 只优化组件中的内容
+
+Count/index.jsx
+
+```jsx
+import React, { Component } from 'react'
+import store from '../../redux'
+import {incuse, decuse, incurseAsync} from '../../redux/count/action'
+// 引入connect
+import { connect } from 'react-redux'
+
+class Count extends Component {
+  render() {
+    const { count, person } = this.props
+    return (
+      <div>
+        <h2>我是Count</h2>
+        <div>{ count }</div>
+        <div>
+          <select ref={ e => this.selectEl = e }>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+          <button onClick={ this.handleIncurse }>+</button>
+          <button onClick={ this.handleDecurse }>-</button>
+          <button onClick={ this.handleIncurseAsync }>异步加</button>
+        </div>
+        <div>下面的输出{ JSON.stringify(person) }</div>
+      </div>
+    )
+  }
+  handleIncurse = () => {
+    const { value } = this.selectEl
+    this.props.incuse(+value)
+  }
+  handleDecurse = () => {
+    const { value } = this.selectEl
+    this.props.decuse(+value)
+  }
+  handleIncurseAsync = () => {
+    const { value } = this.selectEl
+    this.props.incurseAsync(+value)
+  }
+}
+
+// 调用connect链接ui组件和容器组件
+export default connect(state => ({...state}), {
+  incuse,
+  decuse,
+  incurseAsync
+})(Count)
+```
+
+
+
+Person/index.jsx
+
+```jsx
+import React, { Component } from 'react'
+import store from '../../redux'
+import { addPerson } from '../../redux/person/action'
+import { connect } from 'react-redux'
+
+class Person extends Component {
+  render() {
+    const { count, person } = this.props
+    console.log(person)
+    return (
+      <div>
+        <h2>我是Person</h2>
+        <div>上面的输出{ count }</div>
+        <div>
+          <input type="text" placeholder='姓名' ref={ e => this.addName = e } />
+          <input type="text" placeholder='年龄' ref={ e => this.addAge = e } />
+          <button onClick={ this.handleClick }>添加</button>
+          <ul>
+            {
+              person.map(item => <li key={item.id}>{item.name}---{item.age}</li>) 
+            }
+          </ul>
+        </div>
+      </div>
+    )
+  }
+  handleClick = () => {
+    const { value: name } = this.addName
+    const { value: age } = this.addAge
+    this.props.addPerson({
+      id: window.crypto.randomUUID(),
+      name,
+      age
+    })
+  }
+}
+
+export default connect(state => ({...state}), {addPerson})(Person)
+```
+
+- `connect`：连接接ui组件和容器组件，有两个参数：
+  - props
+    - state：状态
+    - action：方法
+  - ui组件
+- ui组件就能通过`this.props`来使用容器组件传过来的状态和修改状态的方法了
+
+
+
+入口文件
+
+index.jsx
+
+```jsx
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+import { BrowserRouter } from 'react-router-dom'
+import store from './redux'
+import { Provider } from 'react-redux'
+
+ReactDOM.render(
+  <Provider store={store}>
+    <React.StrictMode>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </React.StrictMode>
+  </Provider>
+  ,
+  document.getElementById('root')
+);
+reportWebVitals();
+
+```
+
+**用`Provider`包裹，将`store`传入，这样App组件的所有容器组件就都会收到store**
+
+
+
+
+
+
+
+
+
 ## 扩展
 
 ### 1. fetch
