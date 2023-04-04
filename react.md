@@ -1280,7 +1280,7 @@ cnpm i react-router-dom@5.1.2 -S
     export default withRouter(detail)
     ```
 
-#### 路由分类
+##### 6.2.3 路由分类
 
 - 普通路由
 
@@ -1392,7 +1392,7 @@ cnpm i react-router-dom@5.1.2 -S
 
   
 
-#### 传参分类
+##### 6.2.4 传参分类
 
 - params（动态路由）
 
@@ -1448,6 +1448,38 @@ cnpm i react-router-dom@5.1.2 -S
   }
   ```
 
+##### 6.2.2 路由懒加载
+
+```jsx
+import { NavLink, Switch, Route, Redirect } from 'react-router-dom';
+import { lazy, Suspense } from 'react'
+import './App.css';
+
+const About = lazy(() => import('./views/About'))
+const Home = lazy(() => import('./views/Home'))
+
+export default function App() {
+  return (
+    <div className="App">
+      <NavLink to='/home' children="home" /> &nbsp;
+      <NavLink to='/about' children="about" />
+      <br/><br/>
+      <Suspense fallback={ <h1>加载中</h1>}>
+        <Switch>
+          <Route path="/home" component={ Home } />
+          <Route path="/about" component={ About } />
+          <Redirect to="home" />
+        </Switch>
+      </Suspense>
+    </div>
+  );
+}
+```
+
+- `lazy`：在`react`身在，不在`react-router-dom`身上
+
+- 需要`Suspense`组件指定加载加载中的组件或虚拟dom，类似于`vue3`中 `Suspense` 组件的 `fallback` 插槽
+
 
 
 #### 6.2 6.x 版本
@@ -1456,7 +1488,7 @@ cnpm i react-router-dom@5.1.2 -S
 
 
 
-### UI组件库
+### 7. UI组件库
 
 antd
 
@@ -1464,9 +1496,9 @@ antd
 
 
 
-## 状态管理（redux）
+### 8. 状态管理（redux）
 
-### redux
+#### 8.1 redux
 
 /redux
 
@@ -1697,7 +1729,7 @@ reportWebVitals();
 
 
 
-### react-redux + redux
+#### 8.2 react-redux + redux
 
 - redux 的文件内容都没变
 
@@ -1841,6 +1873,118 @@ reportWebVitals();
 **用`Provider`包裹，将`store`传入，这样App组件的所有容器组件就都会收到store**
 
 
+
+### 9. Hooks
+
+#### 9.1 State Hook
+
+在函数式组件中定义状态
+
+```jsx
+import React from "react"
+
+export default function About() {
+  // 定义hooks
+  const [count, changeCount] = React.useState(0)
+  //  点击修改状态
+  function changeNum() {
+    // changeCount(count + 1)
+   	// 或
+    changeCount(count => count + 1)
+  }
+
+  return (
+    <div>
+      <h1>{ count }</h1>
+      <button onClick={ changeNum }>click</button>
+    </div>
+  )
+}
+```
+
+- `useState`：有两个参数
+  - `state`：数据状态
+  - `setState`：修改数据的方法，有两中修改当时
+    - 直接传修改后的数据
+    - 回调函数，参数为之前的状态
+- 每个变量对应一个 `React.useState`
+
+#### 9.2 Effect Hook
+
+`React.useEffect` 的几种使用方式
+
+- 组件挂载时调用，相当于 `componentDidMount`
+
+  ```jsx
+  React.useEffect(() => {
+      console.log('挂载')
+  }, [])
+  ```
+
+- 组件卸载时调用，相当于 `componentWillUnmount`
+
+  ```jsx
+  React.useEffect(() => {
+      return () => {
+        	console.log('卸载')
+      }
+  }, [])
+  ```
+
+- 监听某一个或几个变量，相当于 `componentDidUpdate`
+
+  ```jsx
+  React.useEffect(() => {
+     console.log('监听')
+  }, [count, ...])
+  ```
+
+`React.useEffect` 有两个参数：
+
+- 回调函数，触发时要执行的代码
+- 数组，默认监听所有变量
+
+
+
+#### 9.3 ref Hook
+
+```jsx
+import React, { useRef } from "react"
+
+export default function About() {
+  const myRef = useRef()
+  function handleBlur() {
+    const el = myRef.current
+    console.log(el.value)
+  }
+  return (
+    <div>
+      <input ref={ myRef } onBlur={ handleBlur } />
+    </div>
+  )
+}
+```
+
+
+
+### Fragment
+
+空标签，类似template
+
+- 编译时会被丢掉
+- `Fragment`只可以写一个属性，就是`key`
+- 可以用`<>  </>`代替，但是不能写`key`属性
+
+```jsx
+import React, { Fragment } from "react"
+export default function About() {
+  return (
+    <Fragment>
+      <h1>H1</h1>
+    </Fragment>
+  )
+}
+```
 
 
 
