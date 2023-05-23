@@ -449,6 +449,122 @@ handleblur = () => {
 }
 ```
 
+##### 3.2.4 context
+
+- 注册
+
+  utils/context.js
+
+  ```js
+  import React from 'react'
+  export const MyContext = React.createContext()
+  ```
+
+- 引入
+
+  home/index.jsx
+
+  ```jsx
+  import React, { Component } from 'react'
+  import Hello from '../../components/Hello'
+  import B from '../../components/B'
+  import { MyContext } from '../../utils/context'
+  
+  const { Provider } = MyContext
+  
+  export default class index extends Component {
+    state = {
+      username: '张三',
+      age: 12
+    }
+    render() {
+      const { username } = this.state
+      return (
+        <div>
+          home
+          <Provider value={ username }>
+            <Hello>
+              <B />
+            </Hello>
+          </Provider>
+        </div>
+      )
+    }
+  }
+  ```
+
+- 使用
+
+  B/index.jsx
+
+  - `static contextType = MyContext`：只能在类中使用
+
+    ```jsx
+    import React, { Component } from 'react'
+    import { MyContext } from '../../utils/context'
+    
+    export default class index extends Component {
+      static contextType = MyContext
+      render() {
+        console.log(this)
+        return (
+          <div className="b">
+            B组件
+            <span>{ this.context }</span>
+          </div>
+        )
+      }
+    }
+    ```
+
+  - 通用
+
+    类式组件
+
+    ```jsx
+    import React, { Component } from 'react'
+    import { MyContext } from '../../utils/context'
+    
+    const { Consumer } = MyContext
+    
+    export default class index extends Component {
+      render() {
+        return (
+          <div className="b">
+            B组件
+            <Consumer>
+              { value => <span>{ value }</span>) }
+            </Consumer>
+          </div>
+        )
+      }
+    }
+    ```
+
+    函数式组件
+
+    ```jsx
+    import React from 'react'
+    import { MyContext } from '../../utils/context'
+    
+    const { Consumer } = MyContext
+    
+    export default function index() {
+      return (
+        <div>
+          B组件
+          <Consumer>
+            { value => <li>{value}</li>) }
+          </Consumer>
+        </div>
+      )
+    }
+    ```
+
+  
+
+
+
 #### 3.3 事件处理
 
 - react中使用的是自定义事件，而不是使用原生事件-----------------为了更好的兼容性
@@ -1966,6 +2082,82 @@ export default function About() {
 ```
 
 
+
+### 10. `PureComponent` 和 `Component`
+
+- `PureComponent` 重写了shouldComponentUpdate()方法，只有 `state` 或 `props` 发生变化时才会返回true，才会调用 `render`
+- 项目中一般用 `PureComponent` 来做优化
+- 不能直接修改state中的值，而是要产生新数据，才会触发 `shouldComponentUpdate` 阀门开启
+
+
+
+
+
+### 11. react中的插槽
+
+Home/index.jsx
+
+```jsx
+import React, { Component } from 'react'
+import Hello from '../../components/Hello'
+import B from '../../components/B'
+
+export default class index extends Component {
+  state = {
+    username: '张三',
+    age: 12
+  }
+  render() {
+    const { username } = this.state
+    return (
+      <div>
+        home
+        <Hello
+          render={ car => <B car={ car } /> }
+          render1={ () => '我是render1的插槽' }
+        >
+          <h1>我是childrenProps</h1>
+        </Hello>
+      </div>
+    )
+  }
+}
+```
+
+Hello/index.jsx
+
+```jsx
+import React, { Component } from 'react'
+
+export default class Hello extends Component {
+  state = {
+    car: '迈巴赫'
+  }
+  render() {
+    return (
+      <div>
+        {/* 名为render1的插槽 */}
+        { this.props.render1() }
+        hello
+        {/* 名为render的插槽 */}
+        { this.props.render(this.state.car) }
+        {/* children插槽 */}
+        { this.props.children }
+      </div>
+    )
+  }
+}
+```
+
+- `childrenProps` 只能有一个，`renderProps` 可以有多个
+- 可以同时使用
+- `renderProps`可以时任意名
+
+
+
+
+
+### 12. ErrorBoundary(错误边界)
 
 
 
