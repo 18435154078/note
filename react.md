@@ -1373,6 +1373,7 @@ cnpm i react-router-dom@5.1.2 -S
 ##### 6.2.2 组件分类
 
 - 路由组件
+  
   - 可以接受到内置的 `props` 值
   
 - 一般组件
@@ -2246,4 +2247,245 @@ try {
     })
 }
 ```
+
+
+
+### 2. 数组
+
+react中指定循环次数
+
+```jsx
+{
+  new Array(10).fill(null).map((_, index) => <li key={ index + 1 }>{ index + 1 }</li>)
+}
+```
+
+- `new Array(10)`：创建一个长度为10的稀疏型数组
+- `Array(10).fill(null)`：填充稀疏型数组，转为密集型数组
+
+### 3. jsx底层渲染机制
+
+for...in...性能差的原因：可迭代私有的（自身）属性，也可迭代公共（原型）的属性，只能迭代可枚举的，非Symbol类型的属性
+
+获取对象所有私有属性的方法：
+
+- `[...Object.getOwnPropertyNames(arr), ...Object.getOwnPropertySymbols(arr)]`
+  - `Object.getOwnPropertyNames(arr)`：获取所有可枚举非Symbol属性
+  - `Object.getOwnPropertySymbols(arr)`：获取所有可枚举Symbol属性
+
+- `Reflect.ownKeys(arr)`
+  - 没有办法兼容ie
+
+封装一个each函数
+
+```js
+Object.prototype.each = function (cb) {
+    if(typeof cb !== 'function') throw new TypeError('cb is not a function')
+    let arrs = Reflect.ownKeys(this)
+    arrs.forEach((i, k) => cb(i, this[i]))
+}
+```
+
+#### 3.1 createElememt函数
+
+```js
+function createElememt(name, props, ...arg) {
+  let virtualDOM = {
+    $$typeof: Symbol('react.element'),
+    key: null,
+    props: {},
+    type: null
+  }
+  // 如果是字符串，将name， props，children赋值给virtualDOM
+  if(typeof name === 'string') {
+    virtualDOM.type = name
+    virtualDOM.props = {...props}
+    if(arg.length == 1) {
+      virtualDOM.props['children'] = arg[0]
+    } else if(arg.length > 1) {
+      virtualDOM.props['children'] = arg
+    }
+  } else {
+    // name是个函数，调用得到返回值（虚拟dom）
+    virtualDOM = name()
+    virtualDOM.type = name
+    virtualDOM.props = { ...virtualDOM.props, ...props }
+  }
+  return virtualDOM
+}
+```
+
+#### 3.2 render函数
+
+```js
+function render(virtualDOM, root) {
+  // virtualDOM.type是字符串(标签名),创建标签
+  if(typeof virtualDOM.type === 'string') {
+    let el = document.createElement(virtualDOM.type)
+    // 将props属性追加到el元素中
+    let props = virtualDOM.props.each((item, i) => {
+      // className的处理
+      if(item === 'className') {
+        item = 'class'
+      }
+      // children的处理
+      if(item === 'children') {
+        let children = []
+        if(i instanceof Array) {
+          children = i
+        } else {
+          children = [i]
+        }
+        children.each((_, child) => {
+          if(child && child.$$typeof) {
+            render(child, el)
+          } else {
+            let text = document.createTextNode(child)
+            el.appendChild(text)
+          }
+        })
+        return
+      }
+      // style的处理
+      if(item === 'style') {
+        let styles = i.each((k, style) => {
+          el.style[k] = style
+        })
+        return
+      }
+      // 普通属性的处理
+      el.setAttribute(item, i)
+    })
+    // 追加节点
+    root.appendChild(el)
+  } else {
+    /**
+     * 函数组件的处理:
+     * 1. 先获取到函数 virtualDOM.type
+     * 2. 调用函数，将props传给这个函数
+     * 3. 调用render函数
+    */
+    let a = virtualDOM.type
+    let virtualD = a(virtualDOM.props)
+    virtualD.props = {...virtualD.props, ...virtualDOM.props}
+    render(virtualD, root)
+  }
+}
+```
+
+#### 3.3 整体
+
+```js
+Object.prototype.each = function (cb) {
+  if(typeof cb !== 'function') throw new TypeError('cb is not a function')
+  let arrs = Reflect.ownKeys(this)
+  arrs.forEach((i, k) => {
+    if(i !== 'length') {
+      cb(i, this[i])
+    }
+  })
+}
+
+function createElememt(name, props, ...arg) {
+  let virtualDOM = {
+    $$typeof: Symbol('react.element'),
+    key: null,
+    props: {},
+    type: null
+  }
+  // 如果是字符串，将name， props，children赋值给virtualDOM
+  if(typeof name === 'string') {
+    virtualDOM.type = name
+    virtualDOM.props = {...props}
+    if(arg.length == 1) {
+      virtualDOM.props['children'] = arg[0]
+    } else if(arg.length > 1) {
+      virtualDOM.props['children'] = arg
+    }
+  } else {
+    // name是个函数，调用得到返回值（虚拟dom）
+    virtualDOM = name()
+    virtualDOM.type = name
+    virtualDOM.props = { ...virtualDOM.props, ...props }
+  }
+  return virtualDOM
+}
+
+// home组件
+function Home(props) {
+  console.log('Home', props)
+  return createElememt('div', {id: 'home'}, 'home组件')
+}
+
+// about组件
+function About(props) {
+  console.log('About', props)
+  return createElememt('span', {id: 'about', className: 'abt', style: { 'font-size': '20px' }}, 'About组件')
+}
+
+function render(virtualDOM, root) {
+  // virtualDOM.type是字符串(标签名),创建标签
+  if(typeof virtualDOM.type === 'string') {
+    let el = document.createElement(virtualDOM.type)
+    // 将props属性追加到el元素中
+    virtualDOM.props.each((item, i) => {
+      // className的处理
+      if(item === 'className') {
+        item = 'class'
+      }
+      // children的处理
+      if(item === 'children') {
+        let children = []
+        if(i instanceof Array) {
+          children = i
+        } else {
+          children = [i]
+        }
+        children.each((_, child) => {
+          if(child && child.$$typeof) {
+            render(child, el)
+          } else {
+            let text = document.createTextNode(child)
+            el.appendChild(text)
+          }
+        })
+        return
+      }
+      // style的处理
+      if(item === 'style') {
+        i.each((k, style) => {
+          el.style[k] = style
+        })
+        return
+      }
+      // 普通属性的处理
+      el.setAttribute(item, i)
+    })
+    // 追加节点
+    root.appendChild(el)
+  } else {
+    /**
+     * 函数组件的处理:
+     * 1. 先获取到函数 virtualDOM.type
+     * 2. 调用函数，将props传给这个函数
+     * 3. 调用render函数
+    */
+    let a = virtualDOM.type
+    let virtualD = a(virtualDOM.props)
+    virtualD.props = {...virtualD.props, ...virtualDOM.props}
+    render(virtualD, root)
+  }
+}
+
+let virtualDOM = createElememt('div', {
+  className: 'hello',
+  style: {
+    color: 'red'
+  }
+}, createElememt(Home, { id: 'world', style: { color: 'blue' } }, '子节点'), '\n证据', createElememt(About, {}))
+
+render(virtualDOM, document.querySelector('#root'))
+```
+
+
 
