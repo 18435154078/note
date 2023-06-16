@@ -18,7 +18,7 @@
     </style>
 </head>
 <body>
-    <!-- <svg width="700" height="700">
+    <svg width="700" height="700">
         <circle
             cx="350"
             cy="350"
@@ -39,26 +39,26 @@
             stroke-dasharray="0, 10000"
         ></circle>
         <text x="350" y="350" class="text">0%</text>
-    </svg> -->
+    </svg>
     
-    <!-- <div onclick="progressInit()">click</div> -->
+    <div onclick="progressInit()">click</div>
 </body>
 <script>
-    // var text = document.querySelector('.text')
-    // var progress = document.querySelector('.progress')
-    // // text.style.transform = `translate(-62px, 40px)`
+    var text = document.querySelector('.text')
+    var progress = document.querySelector('.progress')
+    // text.style.transform = `translate(-62px, 40px)`
     
-    // function progressInit() {
-    //     var step = 0
-    //     var timer = setInterval(() => {
-    //         step += 20
-    //         progress.setAttribute('stroke-dasharray', `${step}, 10000`)
-    //         text.innerHTML = Math.floor(step / 1900 * 100) + '%'
-    //         if(step === 1900) {
-    //             clearInterval(timer)
-    //         }
-    //     }, 20)
-    // }
+    function progressInit() {
+        var step = 0
+        var timer = setInterval(() => {
+            step += 20
+            progress.setAttribute('stroke-dasharray', `${step}, 10000`)
+            text.innerHTML = Math.floor(step / 1900 * 100) + '%'
+            if(step === 1900) {
+                clearInterval(timer)
+            }
+        }, 10)
+    }
 
     // console.time('a')
     // for(let i = 0; i < 100000; i++) {

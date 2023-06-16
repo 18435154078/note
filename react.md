@@ -326,6 +326,19 @@ ReactDOM.render(<Vdom />, document.querySelector('#root'))
 - class中直接赋值相当于在构造器中添加了一个 属性
 - this指向问题可以用箭头函数解决
 
+
+
+`this.setState` 更新问题
+
+- react18版本是异步更新
+- react16版本
+
+
+
+
+
+
+
 ##### 3.2.2 props
 
 组件接受的参数，以键值对的形式存在
@@ -429,7 +442,7 @@ handleblur = () => {
 }
 ```
 
-行内回调会有一些问题，在页面更新的时候会调用两次，不过影响不大，一般用行内
+
 
 ###### 3.2.3.3 createRef（官方推荐）
 
@@ -440,7 +453,7 @@ myRef = React.createRef()
 render() {
     return (
         <div>
-            <input type="text" ref={this.saveInput} onBlur={this.handleblur} />
+            <input type="text" ref={this.myRef} onBlur={this.handleblur} />
         </div>
     )
 }
@@ -448,6 +461,33 @@ handleblur = () => {
     console.log(this.myRef.current)
 }
 ```
+
+行内回调会有一些问题，在页面更新的时候会调用两次，不过影响不大，一般用行内
+
+用途总结：
+
+- 给标签加`ref` ，得到dom结构
+
+- 给类组件加`ref` ，得到组件实例对象
+
+- 给函数组件加`ref`，报错，解决方法？
+
+  - 用 `React.forwardRef`包裹函数
+
+    ```jsx
+    const Home =  React.forwardRef(function Home(props, ref) {
+      return <div>
+        <div ref={ ref }>内容</div>
+      </div>
+    })
+    export default Home
+    ```
+
+  - 函数需要接收两个参数（props, ref）
+
+  - 父组件得到的 ref DOM是子组件中指定的dom元素 `<div ref={ ref }>内容</div>`
+
+
 
 ##### 3.2.4 context
 
@@ -2090,6 +2130,8 @@ export default function About() {
 - 项目中一般用 `PureComponent` 来做优化
 - 不能直接修改state中的值，而是要产生新数据，才会触发 `shouldComponentUpdate` 阀门开启
 
+浅比较：
+
 
 
 
@@ -2170,17 +2212,17 @@ export default class Hello extends Component {
 
 - 编译时会被丢掉
 - `Fragment`只可以写一个属性，就是`key`
-- 可以用`<>  </>`代替，但是不能写`key`属性
+- 可以用`<></>`代替，但是不能写`key`属性
 
 ```jsx
 import React, { Fragment } from "react"
-export default function About() {
+export default   function About() {
   return (
-    <Fragment>
+    <Fragment>       
       <h1>H1</h1>
-    </Fragment>
+    </Fragment> 
   )
-}
+}  
 ```
 
 
@@ -2486,6 +2528,337 @@ let virtualDOM = createElememt('div', {
 
 render(virtualDOM, document.querySelector('#root'))
 ```
+
+#### 3.4 冻结，密封，不可扩展
+
+- 冻结
+  - 怎么冻结：`Object.freeze(obj)`
+  - 检测对象是否被冻结：`Object.isFreeze(obj)`
+  - 有什么特点：不能修改，不能新增，不能删除，不能劫持
+- 密封
+  - 怎么密封：`Object.seal(obj)`
+  - 检测对象是否被密封：`Object.isSeal(obj)`
+  - 有什么特点：可以修改，不能新增，不能删除，不能劫持
+- 不可扩展
+  - 怎么不可扩展：`Object.preventExtensions(obj)`
+  - 检测对象是否扩展：`Object.isExtensiable(obj)`
+  - 有什么特点：可以修改，不能新增，可以删除，可以劫持
+
+关联：
+
+- 冻结的对象是密封的，也是不可扩展的
+- 密封对象是不可扩展的
+
+
+
+### 4. `React.StrictMode`
+
+StrictMode 是一个用来检查项目中潜在问题的工具。与 [Fragment](https://so.csdn.net/so/search?q=Fragment&spm=1001.2101.3001.7020) 一样，StrictMode 不会渲染任何可见的 UI。它为其后代元素触发额外的检查和警告。
+
+StrictMode 目前有助于：
+
+- 识别不安全的生命周期
+- 关于使用过时字符串 ref API 的警告
+- 关于使用废弃的 findDOMNode 方法的警告
+- 检测意外的副作用
+- 检测过时的 context API
+
+### 5. `create-react-app环境变量以及打包配置`
+
+#### 5.1 `.env` 配置
+
+- `.env.development`
+
+  ```.env.development
+  NODE_ENV = development
+  REACT_APP_BASE_URL = localhost:8080/api/
+  ```
+
+- `.env.production`
+
+  ```.env.production
+  NODE_ENV = production
+  BUILD_PATH = dist
+  PUBLIC_URL = /dist
+  ```
+
+#### 5.2 scripts配置
+
+需要将webpack配置暴露 `yarn eject`
+
+- `scripts/start.js`
+
+  ```js
+  'use strict';
+  
+  // Do this as the first thing so that any code reading it knows the right env.
+  process.env.BABEL_ENV = 'development';
+  process.env.NODE_ENV = 'development';
+  ```
+
+- `scripts/build.js`
+
+  ```js
+  'use strict';
+  
+  // Do this as the first thing so that any code reading it knows the right env.
+  process.env.BABEL_ENV = 'production';
+  process.env.NODE_ENV = 'production';
+  process.env.BUILD_PATH = 'dist'
+  process.env.PUBLIC_URL = '/dist'
+  ```
+
+- `scripts/test.js`
+
+  ```js
+  'use strict';
+  
+  // Do this as the first thing so that any code reading it knows the right env.
+  process.env.BABEL_ENV = 'test';
+  process.env.NODE_ENV = 'test';
+  process.env.BUILD_PATH = 'test'
+  process.env.PUBLIC_URL = '/test';
+  ```
+
+  
+
+### 6. sass常见用法
+
+#### 6.1 嵌套规则
+
+#### 6.2 父选择器 `&`
+
+#### 6.3 属性嵌套
+
+```scss
+.funky {
+  font: {
+    family: fantasy;
+    size: 30em;
+    weight: bold;
+  }
+}
+```
+
+会编译成：
+
+```scss
+.funky {
+  font-family: fantasy;
+  font-size: 30em;
+  font-weight: bold;
+}
+```
+
+#### 6.4 占位符选择器 `%`
+
+定义 `%`
+
+```scss
+%font-style {
+  font: {
+    size: 24px;
+    weight: 600;
+  }
+}
+```
+
+使用 `@extend`
+
+```scss
+.hello {
+  color: red;
+  @extend %font-style;
+}
+```
+
+#### 6.5 变量 `$`
+
+定义 `$`
+
+```scss
+$color: green;
+```
+
+使用变量
+
+```scss
+.hello {
+  color: $color;
+}
+```
+
+支持块级作用域
+
+```scss
+.hello {
+  $color: green;
+  color: $color;
+  @extend %font-style
+}
+.world {
+  color: $color; // 直接报错
+}
+```
+
+此时加 `!global`可运行
+
+```scss
+.hello {
+  $color: green !global;
+  color: $color;
+  @extend %font-style
+}
+.world {
+  color: $color;
+}
+```
+
+#### 6.6 数据类型
+
+##### 6.6.1 字符串
+
+定义：`@mixin`
+
+```scss
+@mixin show-color($color) {
+  color: $color
+}
+```
+
+使用：`@include`
+
+```scss
+.hello {
+  @extend %font-style;
+  @include show-color(green)
+}
+.world {
+  @include show-color(#cfcfcf)
+}
+```
+
+
+
+### 7. less常见语法
+
+#### 7.1 嵌套语法
+
+#### 7.2 父选择器 `&`
+
+#### 7.3 变量 `@`
+
+定义 `@`
+
+```scss
+@color: green;
+```
+
+使用变量
+
+```scss
+.hello {
+  color: @color;
+}
+```
+
+#### 7.4 混合
+
+和scss 的 % 选择器类似
+
+定义
+
+```less
+.bordered {
+  border-top: dotted 1px black;
+  border-bottom: solid 2px black;
+}
+```
+
+使用
+
+```less
+.hello {
+  .bordered();
+}
+```
+
+#### 7.5 转义
+
+转移符 `~`
+
+```less
+@min768: ~"(min-width: 768px)";
+.element {
+  @media @min768 {
+    font-size: 1.2rem;
+  }
+}
+```
+
+编译为：
+
+```less
+@media (min-width: 768px) {
+  .element {
+    font-size: 1.2rem;
+  }
+}
+```
+
+
+
+### 8. react合成事件
+
+#### 触发传播机制
+
+- 先捕获，从window开始，window -> document -> html -> body -> ... -> 事件源，可阻止
+- 后冒泡，从事件源开始，事件源 -> ... -> body -> html -> document -> window，可阻止
+
+
+
+#### react中合成事件的处理原则
+
+不是给当前元素基于 `addEventListener` 单独添加事件，而是基于事件委托处理的
+
+- 在react17版本之后，都是委托给 `#root` 这个容器（捕获阶段和冒泡阶段都做了委托）
+- react17之前，都是委托给 `document` 容器（只有冒泡阶段做了委托）
+- 没有事件传播机制的事件，做单独之间绑定
+
+
+
+#### 手动实现合成事件
+
+1. render时用赋值的方式
+
+   ```jsx
+   el[item] = i
+   // 而不是
+   el.setAttribute(item, i)
+   ```
+
+2. 给 `#root` 添加事件
+
+   ```jsx
+   rootDom.addEventListener('click', ev => {
+     let path = ev.composedPath() //  获取到所有事件传递的路径，默认是从里到外，如果是监听事件捕获阶段，需要先反转path
+     path.forEach(pa => {  // 循环，哪一层有 onClick 属性，直接执行
+       let handler = pa['onClick']
+    	//  将ev做特殊处理，将其传入
+       if (handler) handler(ev)
+     })
+   }, false)
+   ```
+
+   - 视图渲染时，只是把合成事件作为属性
+   - 所以当函数是普通函数时，`this` 指向 `undefined`（babel编译开启严格模式）
+   - 
+
+
+
+
+
+
 
 
 
