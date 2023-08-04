@@ -978,18 +978,15 @@ Object.keys(vm._data).forEach(item => {
                   name: '尚硅谷'
               }
           },
-          components: {
-              Student
-          },
           methods: {
-              receive(value) {
-                  console.log(value)
+              sendSchoolName() {
+                  this.$emit('atguigu', this.name)
               }
           }
       }
   </script>
   ```
-
+  
 - ref处理
 
   更灵活，可以在某种情况触发之后绑定事件

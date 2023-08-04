@@ -1123,9 +1123,9 @@ getData = () => {
 // 或
 getData = () => {
     axios.get('http://localhost:3000/api/student').then(res => {
-      console.log(res.data)
+        console.log(res.data)
     })
-  }
+}
 ```
 
 #### 5.3 消息订阅与发布
