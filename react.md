@@ -476,15 +476,21 @@ handleblur = () => {
 
     ```jsx
     const Home =  React.forwardRef(function Home(props, ref) {
-      return <div>
-        <div ref={ ref }>内容</div>
-      </div>
+      // 如果需要获取函数的状态，可以用 useImperativeHandle 将所需要的状态和方法收集起来
+      const [test, setTest] = React.useState("test");
+      useImperativeHandle(ref, () => {
+        return { test, setTest, ref: ref2.current };
+      });
+        const ref2 = React.createRef();
+    return <div>
+        <div ref={ ref2 }>内容</div>
+    </div>
     })
     export default Home
     ```
-
+  
   - 函数需要接收两个参数（props, ref）
-
+  
   - 父组件得到的 ref DOM是子组件中指定的dom元素 `<div ref={ ref }>内容</div>`
 
 
@@ -2037,6 +2043,40 @@ reportWebVitals();
 
 在函数式组件中定义状态
 
+函数组件的每一次渲染（包括更新），都是把函数重新执行，产生一个全新的私有上下文（作用域），内部的代码都需要重新执行一次
+
+每次函数执行之后，数据的状态都是不变的
+
+
+
+原理
+
+```js
+let _state;
+function useState(init) {
+  if (typeof _state === "function") {
+    _state = setState();
+  } 
+  if (_state === undefined) {
+    _state = init;
+  }
+  function setState(newState) {
+    if (typeof newState === "function") {
+      _state = newState(_state);
+      // 通知视图更新
+    } else {
+      _state = newState;
+      // 通知视图更新
+    }
+  }
+  return [_state, setState];
+}
+```
+
+
+
+应用
+
 ```jsx
 import React from "react"
 
@@ -2078,7 +2118,7 @@ export default function About() {
   }, [])
   ```
 
-- 组件卸载时调用，相当于 `componentWillUnmount`
+- 组件卸载时调用，相当于 `componentWillUnmount`，组件更新后，会把之前callback返回的函数执行，在这个函数中，获取到状态也是之前的状态，不是最新的
 
   ```jsx
   React.useEffect(() => {
@@ -2103,7 +2143,18 @@ export default function About() {
 
 
 
-#### 9.3 ref Hook
+#### 9.3 layoutEffect Hook
+
+和Effect的区别
+
+如果layoutEffect 回调中有状态的变化，layoutEffect 会先阻塞执行函数时虚拟DOM的生成（或真实DOM的渲染），修改状态，生成虚拟DOM，渲染真实DOM
+
+#### 9.4 ref Hook
+
+`useRef` 和 `createRef` 的区别
+
+- `useRef` 每次组件更新的时候不不会重新创建，用的是初始化时候创建的 ref 对象
+- `createRef` 每次都会重新创建
 
 ```jsx
 import React, { useRef } from "react"
@@ -2121,6 +2172,52 @@ export default function About() {
   )
 }
 ```
+
+#### 9.5 useImperativeHandle
+
+获取函数组件内部的状态和方法
+
+父组件
+
+```jsx
+import React, { forwardRef, useImperativeHandle, useState } from "react";
+import TestFnRef from "../../views/testFnRef";
+export default function TestFnRef(prop) {
+  const myRef = useRef()
+  return (
+    <div>
+      <TestFnRef ref={ myRef } />
+    </div>
+  );
+});
+
+```
+
+
+
+子组件
+
+```jsx
+import React, { forwardRef, useImperativeHandle, useState } from "react";
+
+
+export default forwardRef(function TestFnRef(prop, ref) {
+  const [test, setTest] = React.useState("test");
+  const ref2 = React.createRef();
+  useImperativeHandle(ref, () => {
+    return { test, setTest, ref: ref2.current };
+  });
+  return (
+    <div>
+      <span ref={ref2}></span>
+    </div>
+  );
+});
+```
+
+
+
+
 
 
 
