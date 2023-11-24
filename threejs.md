@@ -46,7 +46,7 @@
   {
     "imports": {
       "three": "./threejs/build/three.module.js",
-      "OrbitControls": "./threejs/examples/jsm/controls/OrbitControls.js"  // threejs扩展
+      "OrbitControls": "./threejs/examples/jsm/controls/OrbitControls.js"  // threejs扩展控件
     }
   }
 </script>
@@ -112,6 +112,8 @@ const axesHelper = new THREE.AxesHelper(500)
 // 将坐标系添加到场景中
 scene.add(axesHelper)
 ```
+
+## 四、光源
 
 
 
