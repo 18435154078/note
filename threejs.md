@@ -86,11 +86,18 @@ camera.position.set(100, 200, 200)
 camera.lookAt(mesh.position)
 ```
 
+**注意：观察点总是会在坐标的canvas的中心位置**
+
 ### 3. 渲染器
 
 ```js
 // 创建一个webgl渲染器
-const renderer = new THREE.WebGLRenderer()
+const renderer = new THREE.WebGLRenderer({
+    antialias: true   // 抗锯齿
+})
+// renderer.antialias = true     // 抗锯齿
+renderer.setPixelRatio(window.devicePixelRatio)   // 告诉threejs当前屏幕的像素比
+renderer.setClearColor(0x999999)   // 设置背景颜色
 // 设置渲染区域尺寸
 renderer.setSize(window.innerWidth, window.innerHeight)
 // 执行render方法
@@ -114,6 +121,147 @@ scene.add(axesHelper)
 ```
 
 ## 四、光源
+
+### 1. 点光源
+
+#### 1.1 创建一个点光源
+
+```js
+// 创建一个光源对象
+const pointLight = new THREE.PointLight(0xff00ff, 1000000000000)
+// 设置光源的位置
+pointLight.position.set(0, 0, 0)
+// 将光源添加到场景中
+scene.add(pointLight)
+```
+
+#### 1.2 点光源可视化
+
+```js
+// 可视化点光源
+const pointLightHelper = new THREE.PointLightHelper(pointLight, 1)
+scene.add(pointLightHelper)
+```
+
+### 2. 环境光
+
+```js
+const light = new THREE.AmbientLight(0x404040, 100); // 柔和的白光
+scene.add(light);
+```
+
+### 3. 平行光
+
+#### 3.1.  创建一个平行光
+
+默认目标坐标(0,0,0)
+
+```js
+// 创建一个平行光
+const directionalLight = new THREE.DirectionalLight(0xff00ff, 100000);
+directionalLight.position.set(-500, -500, -500)
+// directionalLight.target = mesh2
+scene.add(directionalLight);
+```
+
+#### 3.2 平行光可视化
+
+```js
+// 平行光可视化
+const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 10)
+scene.add(directionalLightHelper)
+```
+
+
+
+
+
+## 五、控件
+
+### 1. OrbitControls
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "three": "./threejs/build/three.module.js",
+      "OrbitControls": "./threejs/examples/jsm/controls/OrbitControls.js"
+    }
+  }
+</script>
+<script type="module">
+    // 引入控件
+    import { OrbitControls } from 'OrbitControls'
+	// 创建一个控件，并将相机和canvas元素以参数形式传入
+    const controls = new OrbitControls(camera, renderer.domElement);
+    
+    // 修改相机观察点
+    controls.target.set(-100, 100, 30)
+    // 修改相机视线
+    controls.update()
+    
+    // 监听控件的change事件，改变相机位置的同时重新渲染画布
+    controls.addEventListener('change', () => {
+        renderer.render(scene, camera)
+    })
+</script>
+```
+
+### 2. Stats
+
+```HTML
+<script type="importmap">
+  {
+    "imports": {
+      "three": "./threejs/build/three.module.js",
+      "stats": "./threejs/examples/jsm/libs/stats.module.js"
+    }
+  }
+</script>
+<script type="module">
+    import * as THREE from 'three'
+    import Stats from 'stats'
+    // 创建stats对象
+    const stats = new Stats()
+    stats.setMode(2)  // 设置模式
+    document.body.appendChild(stats.domElement)
+    function render() {
+        stats.update()  // 刷新时间
+        renderer.render(scene, camera)
+        requestAnimationFrame(render)
+    }
+  render()
+</script>
+```
+
+
+
+## 六、动画
+
+动画api：window.requestAnimationFrame
+
+https://zhuanlan.zhihu.com/p/656701597
+
+```js
+function render() {
+    mesh2.rotateY(0.05)
+    renderer.render(scene, camera)
+    requestAnimationFrame(render)
+}
+render()
+```
+
+时间追踪
+
+clock：http://www.yanhuangxueyuan.com/threejs/docs/index.html?q=clock#api/zh/core/Clock
+
+
+
+## 七、几何体
+
+
+
+## 八、材质
 
 
 
