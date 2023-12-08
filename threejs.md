@@ -259,9 +259,108 @@ clock：http://www.yanhuangxueyuan.com/threejs/docs/index.html?q=clock#api/zh/co
 
 ## 七、几何体
 
+顶点位置数据
+
+
+
+
+
 
 
 ## 八、材质
+
+
+
+
+
+
+
+## gui.js库
+
+### 常用方法
+
+创建一个Gui实例对象
+
+```js
+import Gui from 'guijs';
+const guijs = new Gui();
+```
+
+#### 1. add
+
+```js
+import Gui from 'guijs';
+const guijs = new Gui();
+
+guijs.add({ left: 0 }, 'left', 0, 500)  // 创建一个范围值
+guijs.addColor({ color: 0x00ff00 }, 'color')   // 创建一个颜色选择器
+guijs.add({ boolean: false }, 'boolean')  // 创建一个选择框
+position.add({ top: 0 }, 'top', [0, 200, 400])  // 创建一个下拉菜单
+position.add({ top: 0 }, 'top', {
+    top: 0,
+    center:200,
+    bottom: 400
+})  // 创建一个下拉菜单
+```
+
+#### 2. name
+
+```js
+import Gui from 'guijs';
+const guijs = new Gui();
+
+guijs.add({ left: 0 }, 'left', 0, 500).name('111')  //命名
+```
+
+#### 3. onChange
+
+变量改变的事件
+
+```js
+import Gui from 'guijs';
+const guijs = new Gui();
+
+guijs.onChange(e => {
+    
+})
+```
+
+#### 4. addFolder
+
+创建一个分组（可以嵌套）
+
+```js
+import Gui from 'guijs';
+const guijs = new Gui();
+
+let position = guijs.addFolder('位置')
+position.add({ left: 0 }, 'left', 0, 500).name('111')
+position.add({ top: 0 }, 'top', 0, 500).step(1)
+```
+
+#### 5. step
+
+步长
+
+```js
+import Gui from 'guijs';
+const guijs = new Gui();
+
+guijs.add({ top: 0 }, 'top', 0, 500).step(1)
+```
+
+#### 6. addColor
+
+添加颜色选择器
+
+```js
+import Gui from 'guijs';
+const guijs = new Gui();
+
+guijs.add({ color: 0xffffff }, 'color')
+```
+
+
 
 
 
