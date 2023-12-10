@@ -273,6 +273,47 @@ clock：http://www.yanhuangxueyuan.com/threejs/docs/index.html?q=clock#api/zh/co
 
 
 
+## 九、模型
+
+### 1. 网格模型
+
+```js
+// 创建一个网格模型，用来表示生活中的物体
+const mesh = new THREE.Mesh(geomery, material)
+// 定义网格模型坐标
+mesh.position.set(0, 10, 0)
+scene.add(mesh)
+```
+
+
+
+
+
+### 2. 点模型
+
+```js
+const material = new THREE.PointsMaterial({
+  color: 0xff0000,
+  size: 2
+})
+```
+
+### 3. 线模型
+
+```js
+const material = new THREE.Line({   // 一条连续的线
+    color: 0xff0000
+})
+const material = new THREE.LineLoop({  // 一条头尾相接的连续的线
+    color: 0xff0000
+})
+const material = new THREE.LineBasicMaterial({  // 在若干对的顶点之间绘制的一系列的线（线段）
+    color: 0xff0000
+})
+```
+
+
+
 
 
 ## gui.js库
