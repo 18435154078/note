@@ -259,7 +259,91 @@ clock：http://www.yanhuangxueyuan.com/threejs/docs/index.html?q=clock#api/zh/co
 
 ## 七、几何体
 
-顶点位置数据
+### 7.1 构建一个平面矩形
+
+```js
+const scene = new THREE.Scene()
+  const geometry = new THREE.BufferGeometry()  // 创建一个空的几何体
+
+  // 用类型数组创建顶点数据
+  let a = new Float32Array([
+    0, 0, 0,
+    10, 0, 0,
+    10, 10, 0,
+    0, 10, 0,
+    0, 0, 0,
+    10, 10, 0
+  ])
+  // 创建属性缓冲对象
+  const attribute = new THREE.BufferAttribute(a, 3)
+
+  // 设置几何体的顶点位置属性
+  geometry.attributes.position = attribute
+
+  const material = new THREE.MeshBasicMaterial({
+    color: 0x00ffff,
+    side: THREE.DoubleSide
+  })
+  const mesh = new THREE.Mesh(geometry, material)
+  scene.add(mesh)
+```
+
+### 7.2 几何定点的索引数据
+
+```js
+const scene = new THREE.Scene()
+  const geometry = new THREE.BufferGeometry()  // 创建一个空的几何体
+
+  // 用类型数组创建顶点数据
+  let a = new Float32Array([
+    0, 0, 0,
+    10, 0, 0,
+    10, 10, 0,
+    0, 10, 0,
+    // 0, 0, 0,
+    // 10, 10, 0
+  ])
+
+  // 用几何体索引定义顶点数据
+  const indexes = new Uint16Array([
+    0, 1, 2,
+    3, 0, 2
+  ])
+
+  // 设置几何体的索引
+  geometry.index = new THREE.BufferAttribute(indexes, 1)
+
+  // 创建属性缓冲对象
+  const attribute = new THREE.BufferAttribute(a, 3)
+
+  // 设置几何体的顶点位置属性
+  geometry.attributes.position = attribute
+  console.log(geometry)
+
+
+  const material = new THREE.MeshBasicMaterial({
+    color: 0x00ffff,
+    side: THREE.DoubleSide,
+    wireframe: true // 开启线框
+  })
+  const mesh = new THREE.Mesh(geometry, material)
+  scene.add(mesh)
+```
+
+### 7.3 定点法线数据
+
+```js
+// 创建法向量定点
+const normals = new Float32Array([
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, 1,
+    0, 0, 1,
+])
+geometry.attributes.normal = new THREE.BufferAttribute(normals, 3)
+```
+
+
 
 
 
@@ -285,10 +369,6 @@ mesh.position.set(0, 10, 0)
 scene.add(mesh)
 ```
 
-
-
-
-
 ### 2. 点模型
 
 ```js
@@ -311,6 +391,58 @@ const material = new THREE.LineBasicMaterial({  // 在若干对的顶点之间�
     color: 0xff0000
 })
 ```
+
+
+
+## 十、方法
+
+### 1. 旋转、平移，缩放
+
+- 平移实质修改了模型的**position**属性
+- 缩放实质修改了模型的**scale**属性
+- 旋转实质修改了模型的**rotation**属性
+
+### 2. 克隆
+
+clone()
+
+### 3. 复制
+
+copy()
+
+### 4. 移除
+
+remove()
+
+
+
+
+
+
+
+## 十一、分组
+
+组对象`Group` 或 `Object3D`
+
+
+
+## 十二、纹理贴图
+
+
+
+
+
+## 十二、坐标
+
+本地坐标
+
+模型本身的position
+
+ 
+
+世界坐标（getWorldPosition）
+
+模型本身的position + 所有父级坐标
 
 
 
