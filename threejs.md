@@ -74,6 +74,11 @@
 </script>
 ```
 
+- background：设置环境背景，值是一个环境纹理对象
+- environment：设置全局环境贴图，值是一个环境纹理对象
+
+
+
 ### 2. 相机
 
 ```js
@@ -353,6 +358,53 @@ geometry.attributes.normal = new THREE.BufferAttribute(normals, 3)
 
 ## 八、材质
 
+- 基础网格材质  LineBasicMaterial
+
+  相关属性
+
+  - color
+  - map
+
+- 漫反射材质   MeshLambertMaterial
+
+  相关属性
+
+  - emissiveIntensity：放射光强度   0-1
+
+- 高光网格材质   MeshPhongMaterial
+
+  相关属性
+
+  - shininess：高亮的程度，默认值为 **30**
+
+- 标准网格材质   MeshStandardMaterial
+
+  相关属性：
+
+  - 金属度：metalness     0-1
+
+  - 粗糙度：roughness    0-1
+
+  - 环境贴图：envMap    立方体纹理对象
+
+  - 环境贴图影响：envMapIntensity    默认1
+
+- 物理网格材质
+
+  相关属性：
+
+  - 金属度：metalness     0-1
+
+  - 粗糙度：roughness    0-1
+
+  - clearcoat：清漆层属性
+  - clearcoatRoughness：清漆层粗糙度
+  - transmission：透光度  0-1，和transparent，opacity配合使用
+  - reflectivity：反射率   0-1 默认为**0.5**, 相当于折射率1.5。
+  - ior：折射率   范围由**1.0**到**2.333**。默认为**1.5**。
+
+
+
 
 
 
@@ -426,13 +478,78 @@ remove()
 
 
 
-## 十二、纹理贴图
+## 十二、加载器
+
+### 1 纹理加载器
+
+#### 1.1 表面贴图（TextureLoader）
+
+```js
+// 创建纹理加载器
+const textureLoader = new THREE.TextureLoader()
+// 创建纹理对象
+const texture = textureLoader.load('./assets/di.jpg')
+// 允许纹理对象阵列
+texture.wrapS = THREE.RepeatWrapping
+texture.wrapT = THREE.RepeatWrapping
+// 设置纹理对象阵列
+texture.repeat.set(10, 10);
+
+// texture.offset.set(.1, .1)  //设置纹理贴图的偏移量，本质上是修改了纹理对象的UV坐标
+
+const material = new THREE.LineBasicMaterial({
+    map: texture  // 贴图
+})
+```
+
+#### 1.2 环境贴图（CubeTextureLoader）
+
+```js
+const textureCude = new THREE.CubeTextureLoader()
+    .setPath('assets/环境贴图/环境贴图1/')
+    .load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg'])
+
+//  给场景设置背景
+const scene = new THREE.Scene()
+scene.background = textureCude
+
+
+// 实例化加载器
+const loader = new ，GLTFLoader()
+// 加载模型
+loader.load('./assets/金属.glb', (gltf) => {
+    gltf.scene.traverse(item => {
+        if (item.isMesh) {
+            item.material.envMap = textureCude  // 给材质设置纹理贴图
+        }
+    })
+    scene.add(gltf.scene)
+})
+```
+
+### 2. 模型加载器
+
+```js
+const loader = new ，GLTFLoader()
+// 加载模型
+loader.load('./assets/金属.glb', (gltf) => {
+    gltf.scene.traverse(item => {
+        // item就是加载数来的模型对象
+    })
+    scene.add(gltf.scene)
+}, res => {
+    // 加载过程中触发的事件
+    console.log(res.loaded / res.total)  // 加载百分比
+  })
+```
 
 
 
 
 
-## 十二、坐标
+
+
+## 十三、坐标
 
 本地坐标
 
