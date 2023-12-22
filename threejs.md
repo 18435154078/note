@@ -563,6 +563,157 @@ loader.load('./assets/金属.glb', (gltf) => {
 
 
 
+## 十四、交互
+
+
+
+### 1. 屏幕坐标转标准设备坐标
+
+https://zhuanlan.zhihu.com/p/635113828
+
+
+
+- 屏幕坐标计算
+
+  <img src="https://pic2.zhimg.com/80/v2-7f12208faa936535736055971df53f9d_720w.webp" />
+
+  ```text
+  addEventListener('click',function(event){
+      const px = event.offsetX;
+      const py = event.offsetY;
+  })
+  ```
+
+- 设备坐标计算
+
+  <img src="https://pic1.zhimg.com/80/v2-d42675cda08596ea72f08b81721f822c_720w.webp" />
+
+  范围是 [-1,1]
+
+  ```js
+  renderer.domElement.addEventListener('click', e => {
+      const px = event.offsetX;
+      const py = event.offsetY;
+      const x = (px / width) * 2 - 1;
+      const y = -(py / height) * 2 + 1;
+  })
+  ```
+
+### 2. 射线计算
+
+#### 2.1 射线投射函数（Raycaster）
+
+```js
+// 实例化一个射线投射器
+const raycaster = new THREE.Raycaster()
+// 设置射线投射器
+raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+// 射线交叉计算，获取选中的模型
+```
+
+#### 2.2 射线交叉计算
+
+```js
+const intersects = raycaster.intersectObjects(scene.children, true);
+// intersects 就是射线穿透的模型，可以是多个
+```
+
+
+
+## 十五、后处理
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "three": "./threejs/build/three.module.js",
+      "OrbitControls": "./threejs/examples/jsm/controls/OrbitControls.js",
+      "GLTFLoader": "./threejs/examples/jsm/loaders/GLTFLoader.js",
+      "GUI": "./threejs/examples/jsm/libs/lil-gui.module.min.js",
+      "postprocessing": "./threejs/examples/jsm/postprocessing/EffectComposer.js",
+      "RenderPass": "./threejs/examples/jsm/postprocessing/RenderPass.js",
+      "OutlinePass": "./threejs/examples/jsm/postprocessing/OutlinePass.js",
+      "GammaCorrectionShader": "./threejs/examples/jsm/shaders/GammaCorrectionShader.js",
+      "ShaderPass": "./threejs/examples/jsm/postprocessing/ShaderPass.js"
+    }
+  }
+</script>
+<script type="module">
+    import * as THREE from 'three'
+    import { OrbitControls } from 'OrbitControls'
+    import { GLTFLoader } from 'GLTFLoader'
+    import { EffectComposer } from 'postprocessing'
+    import { RenderPass } from 'RenderPass'  // 渲染通道
+    import { OutlinePass } from 'OutlinePass'
+    import { GammaCorrectionShader } from 'GammaCorrectionShader'  //处理OutlinePass导致光线变暗
+    import { ShaderPass } from 'ShaderPass'
+    
+    // 创建一个composer
+    const composer = new EffectComposer(renderer)
+    // 创建一个渲染通道
+    const renderPass = new RenderPass(scene, camera)
+    composer.addPass(renderPass)
+
+    // 处理OutlinePass导致光线变暗
+    const gammaCorrectionShader = new ShaderPass(GammaCorrectionShader);
+    composer.addPass(gammaCorrectionShader);
+
+    const v2 = new THREE.Vector2(window.innerWidth, window.innerHeight)
+    const pass = new OutlinePass(v2, scene, camera)
+	
+    pass.selectedObjects = [mash]  // 可以是多个，也可以动态设置
+    
+    composer.addPass(pass)
+    
+    function render() {
+        composer.render()
+        requestAnimationFrame(render)
+    }
+
+    render()
+    
+</script>
+```
+
+
+
+
+
+
+
+## TWEEN.js库
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "three": "./threejs/build/three.module.js",
+      "TWEEN": "./threejs/examples/jsm/libs/tween.module.js"
+    }
+  }
+</script>
+<script type="module">
+	import TWEEN from 'TWEEN';
+    
+    new TWEEN.Tween(mesh).to({
+      x: 0,
+      y: 2 * Math.PI,
+      z: 0
+    }, 5000).easing(TWEEN.Easing.Exponential.InOut)
+      .start()
+    
+    function render() {
+        // 更新TWEEN动画
+        TWEEN.update()
+        requestAnimationFrame(render)
+    }
+
+    render()
+</script>
+```
+
+
+
 
 
 ## gui.js库
