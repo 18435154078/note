@@ -2717,7 +2717,40 @@ StrictMode 目前有助于：
   process.env.PUBLIC_URL = '/test';
   ```
 
-  
+
+#### 5.3 配置文件
+
+`config-overrides.js`
+
+```js
+const webpack = require("webpack");
+const path = require("path");
+
+module.exports = function override(config, env) {
+  console.log(process.env);
+  return config;
+};
+```
+
+`package.json`
+
+```json
+{
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build:prod": "react-app-rewired build",
+    "build:test": "set BUILD_PATH=test && set PUBLIC_URL=/test && react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-scripts eject"
+  },
+}
+```
+
+配置多个环境
+
+
+
+
 
 ### 6. sass常见用法
 
